@@ -9,10 +9,23 @@
   "bin": {
     "isdlc-knowledge": "./bin/cli.js"
   },
+  "files": [
+    "bin/",
+    "src/",
+    "ui/",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "start": "node bin/cli.js start",
     "setup": "node bin/cli.js setup",
-    "test": "node --test src/**/*.test.js",
+    "stop": "node bin/cli.js stop",
+    "status": "node bin/cli.js status",
+    "logs": "node bin/cli.js logs",
+    "test": "node --test \"tests/**/*.test.js\" \"src/**/*.test.js\"",
+    "test:unit": "node --test \"tests/unit/**/*.test.js\"",
+    "test:integration": "node --test \"tests/integration/**/*.test.js\"",
+    "test:e2e": "node --test \"tests/e2e/**/*.test.js\"",
     "lint": "eslint src/"
   },
   "keywords": [
@@ -29,6 +42,35 @@
     "type": "git",
     "url": "https://github.com/isdlc/isdlc-knowledge-service.git"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.658.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@opensearch-project/opensearch": "^2.11.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.55.0",
+    "@opentelemetry/sdk-node": "^0.55.0",
+    "@pinecone-database/pinecone": "^4.0.0",
+    "@qdrant/js-client-rest": "^1.12.0",
+    "@zilliz/milvus2-sdk-node": "^2.4.9",
+    "better-sqlite3": "^11.5.0",
+    "cheerio": "^1.0.0",
+    "chromadb": "^1.9.4",
+    "cohere-ai": "^7.14.0",
+    "commander": "^12.1.0",
+    "googleapis": "^144.0.0",
+    "onnxruntime-node": "^1.20.0",
+    "openai": "^4.73.0",
+    "pino": "^9.5.0",
+    "prom-client": "^15.1.3",
+    "simple-git": "^3.27.0",
+    "sqlite-vec": "^0.1.6",
+    "weaviate-ts-client": "^2.2.0"
+  },
+  "optionalDependencies": {
+    "faiss-node": "^0.5.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.15.0",
+    "jsdom": "^29.0.2"
+  }
 }

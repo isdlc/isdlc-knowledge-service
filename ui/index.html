@@ -1,0 +1,180 @@
+<!--
+  T024: Web UI shell — single-page admin UI for iSDLC Knowledge Service.
+  Traces: FR-001, FR-003, FR-005, FR-007, FR-009 — Plain HTML + vanilla JS (CON-004).
+
+  No build step, no framework. Each tab is a <section> toggled by JS.
+  Tabs: Projects (T024), Monitoring (T025), Refresh History (T026), Audit Log (T027).
+-->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>iSDLC Knowledge Service Admin</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>iSDLC Knowledge Service Admin</h1>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="Admin sections">
+      <button class="tab-btn active" data-tab="projects" role="tab" aria-selected="true">Projects</button>
+      <button class="tab-btn" data-tab="monitoring" role="tab" aria-selected="false">Monitoring</button>
+      <button class="tab-btn" data-tab="history" role="tab" aria-selected="false">Refresh History</button>
+      <button class="tab-btn" data-tab="audit" role="tab" aria-selected="false">Audit Log</button>
+    </nav>
+
+    <main class="content">
+      <!-- Projects tab — owned by ui/projects.js (T024). -->
+      <section id="tab-projects" class="tab-panel active" role="tabpanel" aria-labelledby="projects">
+        <div class="panel-header">
+          <h2>Projects</h2>
+          <button id="btn-new-project" class="btn primary">New Project</button>
+        </div>
+
+        <table id="projects-table" class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Version</th>
+              <th>Sources</th>
+              <th>Status</th>
+              <th>Documents</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <!-- Modal form for create/edit. Hidden until needed. -->
+        <div id="project-form-modal" class="modal hidden" role="dialog" aria-modal="true">
+          <div class="modal-content">
+            <h3 id="project-form-title">New Project</h3>
+            <form id="project-form">
+              <input type="hidden" name="id" />
+
+              <label>Name<input name="name" type="text" required /></label>
+              <label>Version<input name="version" type="text" required /></label>
+              <label>Description<textarea name="description"></textarea></label>
+
+              <fieldset class="sources-section">
+                <legend>Sources</legend>
+                <div id="sources-list"></div>
+                <button type="button" id="btn-add-source" class="btn secondary">Add Source</button>
+              </fieldset>
+
+              <fieldset class="model-section">
+                <legend>Embedding Model</legend>
+                <label>Source
+                  <select name="model_source">
+                    <option value="local">local (ONNX)</option>
+                    <option value="openai">openai</option>
+                    <option value="cohere">cohere</option>
+                    <option value="bedrock">bedrock</option>
+                  </select>
+                </label>
+                <label>Model<input name="model_name" type="text" /></label>
+                <label class="model-local-only">Precision
+                  <select name="model_precision">
+                    <option value="fp32">fp32</option>
+                    <option value="fp16">fp16</option>
+                    <option value="fp4">fp4</option>
+                  </select>
+                </label>
+                <label class="model-cloud-only">API Key<input name="model_api_key" type="password" /></label>
+              </fieldset>
+
+              <fieldset class="vectordb-section">
+                <legend>Vector DB</legend>
+                <label>Backend
+                  <select name="vectordb_backend">
+                    <option value="sqlite-vec">sqlite-vec</option>
+                    <option value="qdrant">qdrant</option>
+                    <option value="chromadb">chromadb</option>
+                    <option value="milvus">milvus</option>
+                    <option value="weaviate">weaviate</option>
+                    <option value="faiss">faiss</option>
+                  </select>
+                </label>
+                <label>Path / URL<input name="vectordb_target" type="text" /></label>
+              </fieldset>
+
+              <div class="form-actions">
+                <button type="submit" class="btn primary">Save</button>
+                <button type="button" id="btn-cancel-form" class="btn secondary">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Toast container for transient notifications. -->
+        <div id="toast-container" class="toast-container" aria-live="polite"></div>
+      </section>
+
+      <!-- Monitoring tab (T025) — mounted by ui/monitoring.js. The inner
+           #monitoring-tab element is the documented mount point shared with
+           the unit tests; the outer <section> is the tab-panel toggled by
+           the inline tab switcher (consistent with T024's projects panel).
+           Traces: FR-011, FR-015. -->
+      <section id="tab-monitoring" class="tab-panel" role="tabpanel" hidden>
+        <section id="monitoring-tab" class="tab-content"></section>
+      </section>
+
+      <!-- Refresh History tab (T026) — mounted by ui/refresh-history.js. The
+           element below is the mount point; ui/refresh-history.js renders the
+           project picker, filters, timeline table, and empty state into it.
+           Traces: FR-007 AC-007-05. -->
+      <section id="tab-history" class="tab-panel" role="tabpanel" hidden>
+        <div id="refresh-history-tab"></div>
+      </section>
+
+      <!-- Audit Log tab (T027) — mounted by ui/audit.js. The element below
+           is the placeholder mount point; ui/audit.js renders filters, table,
+           pagination, and empty state into this section. The audit log is
+           append-only (FR-014, AC-014-04): NO edit/delete affordances are
+           rendered for entries. -->
+      <section id="tab-audit" class="tab-panel" role="tabpanel" hidden>
+        <h2>Audit Log</h2>
+        <div id="audit-tab" data-audit-mount></div>
+      </section>
+    </main>
+
+    <script type="module" src="/projects.js"></script>
+    <script type="module" src="/audit.js"></script>
+    <script type="module">
+      // T026 — auto-mount the Refresh History tab.
+      import { mount as mountRefreshHistory } from '/refresh-history.js';
+      const root = document.getElementById('refresh-history-tab');
+      if (root) mountRefreshHistory(root).catch((err) => console.error(err));
+    </script>
+    <script type="module">
+      // T025 — auto-mount the Monitoring tab.
+      import { createMonitoring } from '/monitoring.js';
+      const monRoot = document.getElementById('monitoring-tab');
+      if (monRoot) {
+        const monitoring = createMonitoring();
+        monitoring.mount(monRoot).catch((err) => console.error(err));
+      }
+    </script>
+    <script>
+      // Tiny tab switcher — kept inline so it works without a separate module.
+      document.querySelectorAll('.tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.tab;
+          document.querySelectorAll('.tab-btn').forEach((b) => {
+            const active = b.dataset.tab === target;
+            b.classList.toggle('active', active);
+            b.setAttribute('aria-selected', active ? 'true' : 'false');
+          });
+          document.querySelectorAll('.tab-panel').forEach((p) => {
+            const active = p.id === `tab-${target}`;
+            p.classList.toggle('active', active);
+            if (active) p.removeAttribute('hidden');
+            else p.setAttribute('hidden', '');
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

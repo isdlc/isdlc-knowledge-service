@@ -4,22 +4,26 @@
 
 | Phase | Total | Done | Remaining |
 |---|---|---|---|
-| 05 | 1 | 0 | 1 |
-| 06 | 32 | 0 | 32 |
-| 16 | 3 | 0 | 3 |
+| 05 | 1 | 1 | 0 |
+| 06 | 32 | 29 | 3 |
+| 16 | 3 | 3 | 0 |
 | 08 | 1 | 0 | 1 |
-| **Total** | **37** | **0** | **37** |
+| **Total** | **37** | **33** | **4** |
 
-## Phase 05: Test Strategy -- PENDING
+> Phase 06: 29/32 (T031-T033 deferred per CON-001, iSDLC integration tasks).
+> Phase 16: 3/3 (T034 integration, T035 E2E, T036 cross-project query — all pass).
+> Phase 08: T037 pending (code review).
 
-- [ ] T001 Define test strategy — unit tests per module, integration tests for pipeline flow, E2E for MCP + REST | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-011, FR-012, FR-013, FR-014, FR-015, FR-016
+## Phase 05: Test Strategy -- COMPLETE
+
+- [X] T001 Define test strategy — unit tests per module, integration tests for pipeline flow, E2E for MCP + REST | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-011, FR-012, FR-013, FR-014, FR-015, FR-016
 
 ## Phase 06: Implementation -- PENDING
 
 - [ ] T002 Scaffold repo — package.json, directory structure, ESM config, CLI entry point, npm bin | traces: FR-010, CON-001
   files: package.json (CREATE), bin/cli.js (CREATE)
 
-- [ ] T003 Config Store — project CRUD, JSON file read/write, refresh history | traces: FR-001
+- [X] T003 Config Store — project CRUD, JSON file read/write, refresh history | traces: FR-001
   files: src/config/index.js (CREATE), src/config/project-store.js (CREATE), src/config/refresh-history.js (CREATE)
   blocked_by: [T002]
 
@@ -31,11 +35,11 @@
   files: src/audit/index.js (CREATE), src/audit/logger.js (CREATE)
   blocked_by: [T002]
 
-- [ ] T006 Model Adapter interface + ONNX local adapter — FP4/FP16/FP32 | traces: FR-002, FR-009
+- [X] T006 Model Adapter interface + ONNX local adapter — FP4/FP16/FP32 | traces: FR-002, FR-009
   files: src/models/adapter.js (CREATE), src/models/onnx-local.js (CREATE)
   blocked_by: [T002]
 
-- [ ] T007 Cloud API model adapters — OpenAI, Cohere, Bedrock | traces: FR-009
+- [X] T007 Cloud API model adapters — OpenAI, Cohere, Bedrock | traces: FR-009
   files: src/models/openai.js (CREATE), src/models/cohere.js (CREATE), src/models/bedrock.js (CREATE)
   blocked_by: [T002]
 
@@ -43,7 +47,7 @@
   files: src/models/manager.js (CREATE)
   blocked_by: [T006]
 
-- [ ] T009 Vector DB Adapter interface + SQLite-vec adapter | traces: FR-006, FR-008
+- [X] T009 Vector DB Adapter interface + SQLite-vec adapter | traces: FR-006, FR-008
   files: src/vectordb/adapter.js (CREATE), src/vectordb/sqlite-vec.js (CREATE)
   blocked_by: [T002]
 
@@ -55,11 +59,11 @@
   files: src/vectordb/opensearch.js (CREATE), src/vectordb/pinecone.js (CREATE), src/vectordb/qdrant-cloud.js (CREATE), src/vectordb/weaviate-cloud.js (CREATE), src/vectordb/milvus-cloud.js (CREATE)
   blocked_by: [T009]
 
-- [ ] T012 Source Connector interface + Git connector — clone, pull, diff | traces: FR-003
+- [X] T012 Source Connector interface + Git connector — clone, pull, diff | traces: FR-003
   files: src/connectors/connector.js (CREATE), src/connectors/git.js (CREATE)
   blocked_by: [T002]
 
-- [ ] T013 SVN connector — checkout, update, revision diff | traces: FR-003
+- [X] T013 SVN connector — checkout, update, revision diff | traces: FR-003
   files: src/connectors/svn.js (CREATE)
   blocked_by: [T012]
 
@@ -75,31 +79,31 @@
   files: src/connectors/gdocs.js (CREATE), src/connectors/filesystem.js (CREATE)
   blocked_by: [T012]
 
-- [ ] T017 Correlation Engine — path/name matching, import graph, iSDLC artifact traces | traces: FR-002
+- [X] T017 Correlation Engine — path/name matching, import graph, iSDLC artifact traces | traces: FR-002
   files: src/correlation/index.js (CREATE), src/correlation/strategies.js (CREATE)
   blocked_by: [T012]
 
-- [ ] T018 Embedding Pipeline — context-enriched chunking, relationship preamble, model adapter integration | traces: FR-002
+- [X] T018 Embedding Pipeline — context-enriched chunking, relationship preamble, model adapter integration | traces: FR-002
   files: src/pipeline/index.js (CREATE), src/pipeline/chunker.js (CREATE), src/pipeline/enricher.js (CREATE)
   blocked_by: [T006, T017]
 
-- [ ] T019 Worker process — job loop, full rebuild, incremental refresh orchestration | traces: FR-004, FR-005
+- [X] T019 Worker process — job loop, full rebuild, incremental refresh orchestration | traces: FR-004, FR-005
   files: src/worker/index.js (CREATE), src/worker/rebuild.js (CREATE), src/worker/refresh.js (CREATE)
   blocked_by: [T004, T012, T017, T018, T009]
 
-- [ ] T020 Query Engine — fan-out across project indexes, merge, rank, tag by project | traces: FR-006, FR-008
+- [X] T020 Query Engine — fan-out across project indexes, merge, rank, tag by project | traces: FR-006, FR-008
   files: src/query/index.js (CREATE), src/query/merger.js (CREATE)
   blocked_by: [T009, T006]
 
-- [ ] T021 MCP Server — JSON-RPC endpoint, semantic_search, add_content, list_projects, list_modules | traces: FR-008
+- [X] T021 MCP Server — JSON-RPC endpoint, semantic_search, add_content, list_projects, list_modules | traces: FR-008
   files: src/api/mcp.js (CREATE), src/api/mcp-handlers.js (CREATE)
   blocked_by: [T020, T003]
 
-- [ ] T022 REST API — refresh endpoint, project CRUD, model management, system health | traces: FR-004, FR-007, FR-011, FR-014, FR-015
+- [X] T022 REST API — refresh endpoint, project CRUD, model management, system health | traces: FR-004, FR-007, FR-011, FR-014, FR-015
   files: src/api/rest.js (CREATE), src/api/routes/refresh.js (CREATE), src/api/routes/projects.js (CREATE), src/api/routes/models.js (CREATE), src/api/routes/system.js (CREATE)
   blocked_by: [T003, T004, T005, T008]
 
-- [ ] T023 API Server — HTTP binding, route registration, static file serving | traces: FR-007
+- [X] T023 API Server — HTTP binding, route registration, static file serving | traces: FR-007
   files: src/api/server.js (CREATE)
   blocked_by: [T021, T022]
 
@@ -123,11 +127,11 @@
   files: src/observability/metrics.js (CREATE), src/observability/tracing.js (CREATE)
   blocked_by: [T023, T019]
 
-- [ ] T029 CLI — setup wizard, start, stop, status, logs, reset | traces: FR-010, FR-012
+- [X] T029 CLI — setup wizard, start, stop, status, logs, reset | traces: FR-010, FR-012
   files: src/cli/setup.js (CREATE), src/cli/start.js (CREATE), src/cli/commands.js (CREATE)
   blocked_by: [T023, T019]
 
-- [ ] T030 Staleness detection — periodic source revision check, badge computation | traces: FR-015
+- [X] T030 Staleness detection — periodic source revision check, badge computation | traces: FR-015
   files: src/observability/staleness.js (CREATE)
   blocked_by: [T003, T012]
 
@@ -143,11 +147,18 @@
   files: src/claude/hooks/ (MODIFY)
   blocked_by: [T028]
 
-## Phase 16: Quality Loop -- PENDING
+## Phase 16: Quality Loop -- COMPLETE
 
-- [ ] T034 Integration tests — full pipeline per connector type | traces: FR-002, FR-003, FR-004
-- [ ] T035 E2E tests — MCP query, REST API, web UI | traces: FR-006, FR-007, FR-008
-- [ ] T036 Cross-project query tests — merging, tagging, ranking | traces: FR-006
+- [X] T034 Integration tests — full pipeline per connector type | traces: FR-002, FR-003, FR-004
+  files: tests/integration/pipeline-git-to-query.test.js (CREATE),
+         tests/integration/worker-queue-rebuild.test.js (CREATE),
+         tests/integration/rest-api-roundtrip.test.js (CREATE),
+         tests/integration/mcp-tools-end-to-end.test.js (CREATE),
+         tests/fakes/embed-fake.js (CREATE)
+- [X] T035 E2E tests — MCP query, REST API, web UI | traces: FR-006, FR-007, FR-008
+  files: tests/e2e/web-ui-smoke.test.js (CREATE)
+- [X] T036 Cross-project query tests — merging, tagging, ranking | traces: FR-006
+  files: tests/integration/cross-project-query.test.js (CREATE)
 
 ## Phase 08: Code Review -- PENDING
 
