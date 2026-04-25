@@ -1,0 +1,45 @@
+{
+  "domain": "traceability",
+  "version": "2.1.0",
+  "format": {
+    "columns": [
+      { "key": "fr_id", "header": "FR", "width": "narrow" },
+      { "key": "requirement", "header": "Requirement", "width": "wide" },
+      { "key": "design_blast_radius", "header": "Design / Blast Radius", "width": "wide" },
+      { "key": "related_tasks", "header": "Related Tasks", "width": "medium" }
+    ],
+    "rendering": {
+      "table_style": "ascii_box",
+      "cell_wrap": true,
+      "empty_cell": "(none)",
+      "row_separator": true
+    },
+    "post_table_sections": [
+      "assumptions_and_inferences"
+    ],
+    "scoping_rules": {
+      "tasks": "Primary view: FR → Requirement narrative + ACs → Design narrative + file paths → Task list. Used at PRESENTING_TASKS confirmation.",
+      "requirements": "FR → Requirement narrative + ACs → (design column shows 'pending') → (tasks column shows 'pending')",
+      "architecture": "FR → Requirement narrative + ACs → Design narrative + file paths → (tasks column shows 'pending')",
+      "design": "FR → Requirement narrative + ACs → Design narrative + file paths → (tasks column shows 'pending')"
+    },
+    "content_guidance": {
+      "requirement_column": {
+        "structure": "narrative_first_then_details",
+        "narrative": "Write 2-4 sentences describing what the FR requires in plain language. Include the core behavior change and why it matters.",
+        "details": "Below the narrative, list each AC on its own line as 'AC-NNN-NN: brief description'. Keep AC descriptions to one line each.",
+        "example": "Validate task coverage before PRESENTING_TASKS\nso uncovered requirements are caught.\n\nAC-001-01: validateTaskCoverage returns\n  structured result\nAC-001-02: uncovered items trigger\n  re-generation before presenting"
+      },
+      "design_column": {
+        "structure": "narrative_first_then_details",
+        "narrative": "Write 2-4 sentences describing what changes in the codebase. Name the affected modules, patterns, and contracts. Explain the architectural impact.",
+        "details": "Below the narrative, list affected file paths as 'path/to/file (NEW|MODIFY)'. One file per line.",
+        "example": "Adds coverage validation to the analysis\nconfirmation flow. Introduces a validator\nresult model with covered / uncovered /\norphan outputs.\n\nsrc/core/tasks/task-validator.js (NEW)\nsrc/claude/agents/roundtable-analyst.md\n  (MODIFY)"
+      },
+      "tasks_column": {
+        "structure": "flat_list",
+        "format": "List each related task as 'TNNN brief-description' on its own line. Keep descriptions to 3-5 words."
+      }
+    }
+  }
+}

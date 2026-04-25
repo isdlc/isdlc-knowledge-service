@@ -1,0 +1,202 @@
+{
+  "version": "2.0.0",
+  "description": "Workflow definitions for iSDLC - each workflow defines a fixed, non-skippable phase sequence",
+  "workflows": {
+    "build": {
+      "label": "Build",
+      "command": "/isdlc build",
+      "description": "Execute implementation phases for an analyzed backlog item",
+      "intent": "Build, implement, create, code, develop, ship, fix — execute the implementation workflow for a previously analyzed item",
+      "examples": [
+        "Build the auth feature",
+        "Implement the search module",
+        "Ship the dashboard widget"
+      ],
+      "phases": [
+        "05-test-strategy",
+        "06-implementation",
+        "16-quality-loop",
+        "08-code-review"
+      ],
+      "gate_mode": "strict",
+      "options": {
+        "supervised": {
+          "description": "Enable supervised mode with review gates between phases",
+          "default": false,
+          "flag": "--supervised"
+        },
+        "debate": {
+          "description": "Force debate mode ON for test strategy phase",
+          "default": false,
+          "flag": "--debate"
+        },
+        "no_debate": {
+          "description": "Force debate mode OFF",
+          "default": false,
+          "flag": "--no-debate"
+        },
+        "no_fan_out": {
+          "description": "Disable fan-out parallelism in Phase 16 and Phase 08",
+          "default": false,
+          "flag": "--no-fan-out"
+        }
+      },
+      "performance_budgets": {
+        "standard": {
+          "max_total_minutes": 90,
+          "max_phase_minutes": 25,
+          "max_debate_rounds": 2,
+          "max_fan_out_chunks": 4
+        }
+      },
+      "agent_modifiers": {
+        "05-test-strategy": {
+          "generate_skipped_tests": true,
+          "require_given_when_then_ac": true,
+          "create_atdd_checklist": true
+        },
+        "06-implementation": {
+          "track_red_green_transitions": true,
+          "require_priority_order": true,
+          "all_priorities_must_pass": true
+        },
+        "16-quality-loop": {
+          "scope": "parallel-quality-check"
+        },
+        "08-code-review": {
+          "scope": "human-review-only"
+        }
+      },
+      "requires_branch": true
+    },
+    "test-run": {
+      "label": "Run Tests",
+      "command": "/isdlc test run",
+      "description": "Execute existing automation tests",
+      "intent": "Run existing tests, execute test suite, check if tests pass, verify test results",
+      "examples": [
+        "Run the test suite",
+        "Check if all tests pass",
+        "Execute integration tests"
+      ],
+      "phases": [
+        "11-local-testing",
+        "07-testing"
+      ],
+      "gate_mode": "strict",
+      "agent_modifiers": {
+        "11-local-testing": {
+          "scope": "local"
+        }
+      },
+      "options": {
+        "test_type": {
+          "prompt": "Which tests do you want to run?",
+          "choices": [
+            "unit",
+            "system",
+            "e2e"
+          ],
+          "multi_select": true
+        }
+      },
+      "requires_branch": false
+    },
+    "test-generate": {
+      "label": "Generate Tests",
+      "command": "/isdlc test generate",
+      "description": "Create new tests for existing code",
+      "intent": "Write new tests, add test coverage, generate tests for existing code, create unit tests or integration tests",
+      "examples": [
+        "Add unit tests for the auth module",
+        "Generate tests for the API endpoints",
+        "Improve test coverage for utils"
+      ],
+      "phases": [
+        "05-test-strategy",
+        "06-implementation",
+        "16-quality-loop",
+        "08-code-review"
+      ],
+      "gate_mode": "strict",
+      "agent_modifiers": {
+        "05-test-strategy": {
+          "workflow_type": "test-generate"
+        },
+        "16-quality-loop": {
+          "scope": "parallel-quality-check"
+        }
+      },
+      "options": {
+        "test_type": {
+          "prompt": "What type of tests do you want to generate?",
+          "choices": [
+            "unit",
+            "system",
+            "e2e"
+          ],
+          "multi_select": false
+        }
+      },
+      "requires_branch": false
+    },
+    "upgrade": {
+      "label": "Dependency/Tool Upgrade",
+      "command": "/isdlc upgrade <name>",
+      "description": "Upgrade a dependency, runtime, framework, or tool with full impact analysis and regression testing",
+      "intent": "Upgrade a dependency, update a package, bump a version, migrate a runtime or framework, update a tool to a newer version",
+      "examples": [
+        "Upgrade React to latest",
+        "Update Node.js to v22",
+        "Bump TypeScript version",
+        "Migrate from Express 4 to Express 5"
+      ],
+      "phases": [
+        "15-upgrade-plan",
+        "15-upgrade-execute",
+        "08-code-review"
+      ],
+      "gate_mode": "strict",
+      "options": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "prompt": "What dependency, runtime, or tool do you want to upgrade?"
+        },
+        "max_iterations": {
+          "type": "integer",
+          "default": 10,
+          "description": "Maximum implement-test loop iterations"
+        }
+      },
+      "agent_modifiers": {
+        "15-upgrade-plan": {
+          "scope": "analysis",
+          "require_user_approval": true
+        },
+        "15-upgrade-execute": {
+          "scope": "execution",
+          "max_iterations": 10
+        },
+        "08-code-review": {
+          "scope": "upgrade-review"
+        }
+      },
+      "requires_branch": true
+    }
+  },
+  "task_dispatch": {
+    "enabled": true,
+    "phases": ["05-test-strategy", "06-implementation"],
+    "max_retries_per_task": 3,
+    "parallel_within_tier": true,
+    "min_tasks_for_dispatch": 3
+  },
+  "rules": {
+    "no_halfway_entry": true,
+    "no_agent_phase_skipping": true,
+    "_comment_phase_skipping": "Agents cannot skip phases at runtime. Framework-level sizing modifications to the phase array (REQ-0011) are permitted before phases are encountered.",
+    "single_active_workflow_per_project": true,
+    "require_cancellation_reason": true
+  }
+}

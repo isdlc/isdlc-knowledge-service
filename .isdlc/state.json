@@ -1,0 +1,127 @@
+{
+  "framework_version": "0.1.0-alpha",
+  "project": {
+    "name": "isdlc-knowledge-service",
+    "created": "2026-04-25T12:46:04Z",
+    "description": "Centralised knowledge management service — relationship-aware embedding, multi-project indexes, pluggable Vector DB and model backends, web UI admin, MCP interface",
+    "is_new_project": true,
+    "discovery_completed": true,
+    "discovery_completed_at": "2026-04-25T13:55:00Z",
+    "tech_stack": {
+      "language": "javascript",
+      "runtime": "node",
+      "node_version": ">=18",
+      "module_system": "esm",
+      "test_runner": "node --test",
+      "vector_db": "pluggable",
+      "model_runtime": "onnx-runtime",
+      "queue": "better-sqlite3",
+      "ui": "plain-html"
+    },
+    "backlog": [
+      {
+        "req_id": "REQ-GH-263",
+        "title": "Centralised vector DB carve-out / embedding server",
+        "path": "docs/requirements/REQ-GH-263-centralised-vector-db-carve-out-embedding-server/",
+        "status": "analysed",
+        "phase_completed": "04-test-strategy-prep",
+        "fr_count": 16,
+        "task_count": 37,
+        "adr_count": 4,
+        "linked_at": "2026-04-25T13:55:00Z"
+      }
+    ]
+  },
+  "provider_selection": "claude-code",
+  "complexity_assessment": {
+    "level": null,
+    "track": "auto",
+    "assessed_at": "2026-04-25T12:46:04Z",
+    "assessed_by": "manual",
+    "dimensions": {
+      "architectural": null,
+      "security": null,
+      "testing": null,
+      "deployment": null,
+      "team": null,
+      "timeline": null
+    }
+  },
+  "workflow": {
+    "track": "auto",
+    "track_name": "Orchestrator-managed",
+    "phases_required": null,
+    "phases_optional": null,
+    "phases_skipped": null
+  },
+  "constitution": {
+    "enforced": true,
+    "path": "docs/isdlc/constitution.md",
+    "validated_at": null
+  },
+  "autonomous_iteration": {
+    "enabled": true,
+    "max_iterations": 10,
+    "timeout_per_iteration_minutes": 5,
+    "circuit_breaker_threshold": 3
+  },
+  "skill_enforcement": {
+    "enabled": true,
+    "mode": "observe",
+    "fail_behavior": "allow",
+    "manifest_version": "2.0.0"
+  },
+  "cloud_configuration": {
+    "provider": "undecided",
+    "configured_at": null,
+    "credentials_validated": false,
+    "aws": null,
+    "gcp": null,
+    "azure": null,
+    "deployment": {
+      "staging_enabled": false,
+      "production_enabled": false,
+      "workflow_endpoint": "10-local-testing"
+    }
+  },
+  "iteration_enforcement": {
+    "enabled": true
+  },
+  "skill_usage_log": [],
+  "active_workflow": null,
+  "workflow_history": [],
+  "counters": {
+    "next_req_id": 1,
+    "next_bug_id": 1
+  },
+  "current_phase": "01-requirements",
+  "phases": {
+    "01-requirements": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [] },
+    "02-architecture": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [] },
+    "03-design": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [] },
+    "04-test-strategy": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [] },
+    "05-implementation": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [], "iteration_tracking": { "current": 0, "max": null, "history": [], "final_status": null } },
+    "06-testing": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [], "iteration_tracking": { "current": 0, "max": null, "history": [], "final_status": null } },
+    "07-code-review": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [] },
+    "08-validation": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [] },
+    "09-cicd": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [] },
+    "10-local-testing": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [] },
+    "11-test-deploy": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [] },
+    "12-production": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [] },
+    "13-operations": { "status": "pending", "started": null, "completed": null, "gate_passed": null, "artifacts": [] }
+  },
+  "blockers": [],
+  "active_agent": null,
+  "history": [
+    {
+      "timestamp": "2026-04-25T12:46:04Z",
+      "agent": "init-script",
+      "action": "Project initialized with iSDLC framework"
+    },
+    {
+      "timestamp": "2026-04-25T13:55:00Z",
+      "agent": "discover-orchestrator",
+      "action": "Discovery completed — Phases 1-3 skipped (REQ-GH-263 artifacts authoritative); Phase 4 PRD generated; Phase 5 architecture/data-model/test-strategy split; Phase 6 constitution (14 articles) reviewed; Phase 7 14 module placeholders + tests/ scaffolded + project skills (PROJ-001..004) re-distilled; backlog seeded with REQ-GH-263"
+    }
+  ]
+}

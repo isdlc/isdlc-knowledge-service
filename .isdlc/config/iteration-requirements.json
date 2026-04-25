@@ -1,0 +1,773 @@
+{
+  "version": "2.1.0",
+  "description": "Deterministic iteration requirements per phase - enforced by hooks",
+  "phase_requirements": {
+    "00-quick-scan": {
+      "_comment": "Lightweight scope estimation - runs before requirements gathering",
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": false
+      }
+    },
+    "01-requirements": {
+      "interactive_elicitation": {
+        "enabled": true,
+        "min_menu_interactions": 3,
+        "required_final_selection": [
+          "save",
+          "continue"
+        ],
+        "timeout_minutes": 60
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "I",
+          "IV",
+          "VII",
+          "IX",
+          "XII"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      },
+      "artifact_validation": {
+        "enabled": true,
+        "paths": [
+          "docs/requirements/{artifact_folder}/requirements-spec.md"
+        ]
+      }
+    },
+    "02-impact-analysis": {
+      "_comment": "Full impact analysis for features - runs after requirements are finalized",
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 3,
+        "articles": [
+          "IV",
+          "VII",
+          "IX"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "02-tracing": {
+      "_comment": "Root cause tracing for bug fixes - runs after bug report is captured",
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 3,
+        "articles": [
+          "IV",
+          "VII",
+          "IX"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "03-architecture": {
+      "timeout_minutes": 45,
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "III",
+          "IV",
+          "V",
+          "VII",
+          "IX",
+          "X"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      },
+      "artifact_validation": {
+        "enabled": true,
+        "paths": [
+          "docs/requirements/{artifact_folder}/architecture-overview.md"
+        ]
+      }
+    },
+    "04-design": {
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "I",
+          "IV",
+          "V",
+          "VII",
+          "IX"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      },
+      "artifact_validation": {
+        "enabled": true,
+        "paths": [
+          "docs/requirements/{artifact_folder}/module-design.md"
+        ]
+      }
+    },
+    "05-test-strategy": {
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "II",
+          "VII",
+          "IX",
+          "XI"
+        ]
+      },
+      "traceability_validation": {
+        "enabled": true,
+        "checks": ["requirements_to_tests"]
+      },
+      "artifact_validation": {
+        "enabled": true,
+        "paths": [
+          "docs/requirements/{artifact_folder}/test-strategy.md"
+        ]
+      },
+      "atdd_validation": {
+        "enabled": true,
+        "requires": [
+          "atdd_checklist_generated",
+          "all_ac_have_tests",
+          "all_tests_have_priorities"
+        ],
+        "artifacts": [
+          "docs/isdlc/atdd-checklist.json",
+          "tests/acceptance/"
+        ],
+        "gate_block_on_failure": true
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "06-implementation": {
+      "timeout_minutes": 90,
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "traceability_validation": {
+        "enabled": true,
+        "checks": ["test_implementation", "coverage_presence"]
+      },
+      "test_iteration": {
+        "enabled": true,
+        "max_iterations": 10,
+        "circuit_breaker_threshold": 3,
+        "test_commands": [
+          "npm test",
+          "npm run test",
+          "yarn test",
+          "pnpm test",
+          "pytest",
+          "python -m pytest",
+          "go test",
+          "cargo test",
+          "mvn test",
+          "gradle test",
+          "dotnet test",
+          "jest",
+          "mocha",
+          "vitest"
+        ],
+        "success_criteria": {
+          "all_tests_passing": true,
+          "min_coverage_percent": {
+            "light": 60,
+            "standard": 80,
+            "epic": 95
+          }
+        }
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "I",
+          "II",
+          "III",
+          "V",
+          "VI",
+          "VII",
+          "VIII",
+          "IX",
+          "X"
+        ]
+      },
+      "atdd_validation": {
+        "enabled": true,
+        "requires": [
+          "all_priority_tests_passing",
+          "no_orphan_skips",
+          "red_green_transitions_recorded"
+        ],
+        "priority_enforcement": {
+          "process_order": [
+            "P0",
+            "P1",
+            "P2",
+            "P3"
+          ],
+          "all_must_pass": true,
+          "block_on_incomplete_priority": true
+        },
+        "gate_block_on_failure": true
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "07-testing": {
+      "timeout_minutes": 60,
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "traceability_validation": {
+        "enabled": true,
+        "checks": ["test_execution", "coverage_presence"]
+      },
+      "test_iteration": {
+        "enabled": true,
+        "max_iterations": 10,
+        "circuit_breaker_threshold": 3,
+        "test_commands": [
+          "npm run test:integration",
+          "npm run test:e2e",
+          "npm run e2e",
+          "cypress run",
+          "playwright test"
+        ],
+        "success_criteria": {
+          "all_tests_passing": true,
+          "min_coverage_percent": {
+            "light": 50,
+            "standard": 70,
+            "epic": 85
+          }
+        }
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "II",
+          "VII",
+          "IX",
+          "XI"
+        ]
+      },
+      "atdd_validation": {
+        "enabled": true,
+        "requires": [
+          "no_orphan_skips",
+          "all_priorities_100_percent",
+          "checklist_synced"
+        ],
+        "orphan_skip_patterns": [
+          "it.skip",
+          "test.skip",
+          "@pytest.mark.skip",
+          "@Disabled",
+          "@Ignore",
+          "t.Skip",
+          "xit",
+          "xdescribe"
+        ],
+        "scan_directories": [
+          "tests/acceptance/",
+          "src/test/java/acceptance/"
+        ],
+        "gate_block_on_failure": true
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      },
+      "on_gate_pass": {
+        "trigger_cloud_config": {
+          "enabled": true,
+          "condition": "cloud_configuration.provider === 'undecided'",
+          "action": "prompt_cloud_configuration",
+          "skip_option": true
+        }
+      }
+    },
+    "08-code-review": {
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "V",
+          "VI",
+          "VII",
+          "VIII",
+          "IX"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      },
+      "artifact_validation": {
+        "enabled": true,
+        "paths": [
+          "docs/requirements/{artifact_folder}/code-review-report.md"
+        ]
+      }
+    },
+    "09-validation": {
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "III",
+          "IX",
+          "X",
+          "XII"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "10-cicd": {
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": true,
+        "max_iterations": 5,
+        "circuit_breaker_threshold": 3,
+        "test_commands": [
+          "npm run build",
+          "npm run lint",
+          "docker build"
+        ],
+        "success_criteria": {
+          "all_tests_passing": true
+        }
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "II",
+          "IX"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "11-local-testing": {
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "VIII",
+          "IX"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "12-remote-build": {
+      "_comment": "Remote environment build - no iteration requirements",
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": false
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "12-test-deploy": {
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "IX",
+          "X"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "13-production": {
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "IX",
+          "X"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "14-operations": {
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "VIII",
+          "IX",
+          "XII"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "15-upgrade-plan": {
+      "_comment": "Upgrade planning phase - top-level entry for hook lookup",
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": false
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 3,
+        "articles": [
+          "I",
+          "VII",
+          "IX",
+          "X"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "15-upgrade-execute": {
+      "_comment": "Upgrade execution phase - top-level entry for hook lookup",
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": true,
+        "max_iterations": 5,
+        "circuit_breaker_threshold": 3
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 3,
+        "articles": [
+          "I",
+          "VII",
+          "IX",
+          "X"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    },
+    "15-upgrade": {
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": true,
+        "max_iterations": 5,
+        "circuit_breaker_threshold": 3
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 3,
+        "articles": [
+          "I",
+          "VII",
+          "IX",
+          "X"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      },
+      "sub_phases": {
+        "15-upgrade-plan": {
+          "_comment": "Upgrade planning phase - inherits from parent 15-upgrade",
+          "interactive_elicitation": {
+            "enabled": false
+          },
+          "test_iteration": {
+            "enabled": false
+          },
+          "constitutional_validation": {
+            "enabled": true,
+            "max_iterations": 3,
+            "articles": [
+              "I",
+              "VII",
+              "IX",
+              "X"
+            ]
+          },
+          "agent_delegation_validation": {
+            "enabled": true
+          }
+        },
+        "15-upgrade-execute": {
+          "_comment": "Upgrade execution phase - inherits from parent 15-upgrade",
+          "interactive_elicitation": {
+            "enabled": false
+          },
+          "test_iteration": {
+            "enabled": true,
+            "max_iterations": 5,
+            "circuit_breaker_threshold": 3
+          },
+          "constitutional_validation": {
+            "enabled": true,
+            "max_iterations": 3,
+            "articles": [
+              "I",
+              "VII",
+              "IX",
+              "X"
+            ]
+          },
+          "agent_delegation_validation": {
+            "enabled": true
+          }
+        },
+        "15-upgrade-preliminary-analysis": {
+          "_comment": "Always runs - changelog fetch and quick risk assessment",
+          "interactive_elicitation": {
+            "enabled": false
+          },
+          "test_iteration": {
+            "enabled": false
+          },
+          "constitutional_validation": {
+            "enabled": false
+          }
+        },
+        "15-upgrade-impact-analysis": {
+          "_comment": "Conditional - runs when user chooses comprehensive analysis",
+          "trigger": "user_choice",
+          "trigger_options": [
+            "quick",
+            "comprehensive",
+            "skip"
+          ],
+          "when_comprehensive": {
+            "delegates_to": "impact-analysis-orchestrator",
+            "workflow_context": "upgrade",
+            "sub_agents": [
+              "M1-impact-analyzer",
+              "M2-entry-point-finder",
+              "M3-risk-assessor"
+            ],
+            "timeout_minutes": 10
+          },
+          "interactive_elicitation": {
+            "enabled": true,
+            "min_menu_interactions": 1,
+            "required_final_selection": [
+              "quick",
+              "comprehensive",
+              "skip"
+            ],
+            "timeout_minutes": 5
+          },
+          "test_iteration": {
+            "enabled": false
+          },
+          "constitutional_validation": {
+            "enabled": false
+          }
+        }
+      }
+    },
+    "16-quality-loop": {
+      "_comment": "Parallel quality loop",
+      "interactive_elicitation": {
+        "enabled": false
+      },
+      "test_iteration": {
+        "enabled": true,
+        "max_iterations": 10,
+        "circuit_breaker_threshold": 3,
+        "success_criteria": {
+          "all_tests_passing": true,
+          "lint_passing": true,
+          "type_check_passing": true,
+          "no_critical_vulnerabilities": true,
+          "min_coverage_percent": {
+            "light": 60,
+            "standard": 80,
+            "epic": 95
+          }
+        }
+      },
+      "constitutional_validation": {
+        "enabled": true,
+        "max_iterations": 5,
+        "articles": [
+          "II",
+          "III",
+          "V",
+          "VI",
+          "VII",
+          "IX",
+          "XI"
+        ]
+      },
+      "agent_delegation_validation": {
+        "enabled": true
+      }
+    }
+  },
+  "gate_blocking_rules": {
+    "block_on_incomplete_test_iteration": true,
+    "block_on_incomplete_constitutional": true,
+    "block_on_incomplete_elicitation": true,
+    "block_on_missing_agent_delegation": true,
+    "block_on_missing_artifacts": true,
+    "allow_escalation_override": true
+  },
+  "escalation_rules": {
+    "test_iteration_max_exceeded": "human_review",
+    "constitutional_max_exceeded": "human_decision",
+    "circuit_breaker_triggered": "human_review",
+    "timeout_exceeded": "human_notification"
+  },
+  "workflow_overrides": {
+    "_comment": "Per-workflow overrides that merge with base phase_requirements when a workflow is active",
+    "test-run": {
+      "06-testing": {
+        "constitutional_validation": {
+          "enabled": false
+        },
+        "test_iteration": {
+          "max_iterations": 1,
+          "report_only": true
+        }
+      }
+    },
+    "test-generate": {
+      "04-test-strategy": {
+        "constitutional_validation": {
+          "enabled": false
+        }
+      },
+      "06-testing": {
+        "test_iteration": {
+          "max_iterations": 5
+        }
+      }
+    },
+    "build": {
+      "08-code-review": {
+        "test_iteration": {
+          "enabled": false
+        },
+        "constitutional_validation": {
+          "enabled": true,
+          "max_iterations": 5,
+          "articles": [
+            "VI",
+            "IX"
+          ]
+        }
+      }
+    }
+  }
+}

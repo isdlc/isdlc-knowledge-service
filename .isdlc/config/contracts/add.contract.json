@@ -1,0 +1,62 @@
+{
+  "_generation_metadata": {
+    "generated_at": "2026-04-03T21:16:55.659Z",
+    "generator_version": "1.0.0",
+    "input_files": [
+      {
+        "hash": "6254c4389cd53cfc285b8917796abffbac63783b6db5d0c8b69c928ea876b884",
+        "path": ".claude/hooks/config/artifact-paths.json"
+      },
+      {
+        "hash": "a30724164d751c3addc2065c4c8c33852ffbe9c8b83b045f6a75f712688e4ddd",
+        "path": ".claude/hooks/config/iteration-requirements.json"
+      },
+      {
+        "hash": "c1bc8b8dc6d836021e5a4748acae404a91be53b9a134ab197882e2dc04f7414a",
+        "path": ".claude/hooks/config/skills-manifest.json"
+      },
+      {
+        "hash": "f0e69a1575faadefba40e3941eab8fc814ea6d04527a497d0b37279abab053a4",
+        "path": ".isdlc/config/workflows.json"
+      },
+      {
+        "hash": "ddd1d03b4183fdf40854ecf682cc0777c3bac6c831690f599ea97dbff64c45ad",
+        "path": ".isdlc/roundtable.yaml"
+      },
+      {
+        "hash": "4f31000cee45f09e3c1769fe33845b2a39f6292c5243d113c30112476ce74624",
+        "path": "docs/isdlc/external-skills-manifest.json"
+      }
+    ]
+  },
+  "entries": [
+    {
+      "context": "add",
+      "execution_unit": "add-item",
+      "expectations": {
+        "agent": null,
+        "artifacts_produced": null,
+        "cleanup": [
+          "BACKLOG.md updated with new item"
+        ],
+        "presentation": {
+          "completion_summary": true,
+          "confirmation_sequence": null,
+          "persona_format": null,
+          "progress_format": null
+        },
+        "skills_required": null,
+        "state_assertions": []
+      },
+      "violation_response": {
+        "agent_not_engaged": "report",
+        "artifacts_missing": "warn",
+        "cleanup_skipped": "warn",
+        "presentation_violated": "warn",
+        "skills_missing": "report",
+        "state_incomplete": "report"
+      }
+    }
+  ],
+  "version": "1.0.0"
+}
