@@ -434,3 +434,6 @@
 {"ts":"2026-04-25T22:21:29.805Z","tool":"Read","preferred":"mcp__code-index-mcp__get_file_summary","enforcement":"warn","decision":"exempt","exemption":"edit_prep","rule_id":"inferred-file-summary","rule_source":"inferred"}
 {"ts":"2026-04-25T22:24:43.482Z","tool":"Read","preferred":"mcp__code-index-mcp__get_file_summary","enforcement":"warn","decision":"exempt","exemption":"edit_prep","rule_id":"inferred-file-summary","rule_source":"inferred"}
 {"ts":"2026-04-25T22:56:27.878Z","tool":"Read","preferred":"mcp__code-index-mcp__get_file_summary","enforcement":"warn","decision":"warn","exemption":null,"rule_id":"inferred-file-summary","rule_source":"inferred"}
+{"ts":"2026-04-25T23:12:16.754Z","tool":"Read","preferred":"mcp__code-index-mcp__get_file_summary","enforcement":"warn","decision":"exempt","exemption":"edit_prep","rule_id":"inferred-file-summary","rule_source":"inferred"}
+{"ts":"2026-04-25T23:13:52.644Z","tool":"Read","preferred":"mcp__code-index-mcp__get_file_summary","enforcement":"warn","decision":"exempt","exemption":"edit_prep","rule_id":"inferred-file-summary","rule_source":"inferred"}
+{"ts":"2026-04-25T23:14:32.322Z","tool":"Read","preferred":"mcp__code-index-mcp__get_file_summary","enforcement":"warn","decision":"exempt","exemption":"edit_prep","rule_id":"inferred-file-summary","rule_source":"inferred"}
