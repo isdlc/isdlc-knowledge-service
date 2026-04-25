@@ -1,53 +1,94 @@
-// Module 11: Config Store
+// Module 11: Config Store — public entry point (T003 / FR-001)
 // Responsibility: Project config CRUD and refresh history.
-// Storage: JSON files at data/projects/{id}/config.json and refresh-history.json
+// Storage: JSON files at {dataDir}/projects/{id}/config.json and refresh-history.json
 // See: docs/requirements/REQ-GH-263-.../module-design.md §Module 11
-// Shape: docs/architecture/data-model.md §2.1, §2.3
+//
+// This module exposes two surfaces:
+//   1. createConfigStore({ dataDir }) — factory returning an isolated store
+//      (preferred for tests and for the API server which configures dataDir
+//      at startup).
+//   2. The standalone async functions listed in module-design.md, backed by
+//      a lazily-constructed default singleton at ./data. These are the
+//      module-design "Interface" methods used by callers that have not yet
+//      adopted dependency injection.
+
+import { createProjectStore, InvalidProjectError, slugifyProjectId } from './project-store.js';
+import { createRefreshHistoryStore, MAX_HISTORY_ENTRIES } from './refresh-history.js';
 
 /**
- * @typedef {object} ProjectConfig
- * @property {string} id
- * @property {string} name
- * @property {string} version
- * @property {string} [description]
- * @property {Array<object>} sources
- * @property {object} model_config
- * @property {object} vectordb_config
- * @property {string} created_at
- * @property {string} updated_at
+ * Compose the project + refresh-history stores into one config store.
+ *
+ * @param {{ dataDir?: string }} [options]
  */
+export function createConfigStore(options = {}) {
+  const projects = createProjectStore(options);
+  const history = createRefreshHistoryStore(options);
+  return {
+    dataDir: projects.dataDir,
+    // Project CRUD
+    listProjects: projects.listProjects,
+    getProject: projects.getProject,
+    createProject: projects.createProject,
+    updateProject: projects.updateProject,
+    deleteProject: projects.deleteProject,
+    // Refresh history
+    addRefreshRecord: history.addRefreshRecord,
+    getRefreshHistory: history.getRefreshHistory,
+  };
+}
 
-/** @returns {Promise<ProjectConfig[]>} */
+// ---------------------------------------------------------------------------
+// Default singleton (backwards-compatible standalone exports)
+// ---------------------------------------------------------------------------
+
+let defaultStore;
+function getDefaultStore() {
+  if (!defaultStore) {
+    defaultStore = createConfigStore();
+  }
+  return defaultStore;
+}
+
+/** @returns {Promise<import('./project-store.js').ProjectConfig[]>} */
 export async function listProjects() {
-  throw new Error('Not implemented — see T003');
+  return getDefaultStore().listProjects();
 }
 
-/** @param {string} id @returns {Promise<ProjectConfig|null>} */
+/** @param {string} id */
 export async function getProject(id) {
-  throw new Error('Not implemented — see T003');
+  return getDefaultStore().getProject(id);
 }
 
-/** @param {Omit<ProjectConfig, 'id'|'created_at'|'updated_at'>} config @returns {Promise<ProjectConfig>} */
+/** @param {Omit<import('./project-store.js').ProjectConfig, 'id'|'created_at'|'updated_at'>} config */
 export async function createProject(config) {
-  throw new Error('Not implemented — see T003');
+  return getDefaultStore().createProject(config);
 }
 
-/** @param {string} id @param {Partial<ProjectConfig>} config @returns {Promise<ProjectConfig>} */
+/** @param {string} id @param {Partial<import('./project-store.js').ProjectConfig>} config */
 export async function updateProject(id, config) {
-  throw new Error('Not implemented — see T003');
+  return getDefaultStore().updateProject(id, config);
 }
 
 /** @param {string} id */
 export async function deleteProject(id) {
-  throw new Error('Not implemented — see T003');
+  return getDefaultStore().deleteProject(id);
 }
 
-/** @param {string} id @param {object} record */
+/** @param {string} id @param {import('./refresh-history.js').RefreshRecord} record */
 export async function addRefreshRecord(id, record) {
-  throw new Error('Not implemented — see T003');
+  return getDefaultStore().addRefreshRecord(id, record);
 }
 
-/** @param {string} id @returns {Promise<object[]>} */
+/** @param {string} id @returns {Promise<import('./refresh-history.js').RefreshRecord[]>} */
 export async function getRefreshHistory(id) {
-  throw new Error('Not implemented — see T003');
+  return getDefaultStore().getRefreshHistory(id);
 }
+
+// Re-export factory pieces and helpers for callers that need them.
+export {
+  createProjectStore,
+  createRefreshHistoryStore,
+  InvalidProjectError,
+  slugifyProjectId,
+  MAX_HISTORY_ENTRIES,
+};
