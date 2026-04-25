@@ -1,0 +1,12 @@
+node_modules/
+data/models/
+data/projects/*/index.*
+data/projects/*/index/
+data/queue.db
+data/audit.jsonl
+data/audit.*.jsonl
+*.log
+.env
+.DS_Store
+coverage/
+dist/

@@ -1,0 +1,34 @@
+{
+  "name": "isdlc-knowledge-service",
+  "version": "0.1.0-alpha",
+  "description": "Centralised knowledge management service — relationship-aware embedding, multi-project indexes, pluggable Vector DB and model backends, web UI admin, MCP interface",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "bin": {
+    "isdlc-knowledge": "./bin/cli.js"
+  },
+  "scripts": {
+    "start": "node bin/cli.js start",
+    "setup": "node bin/cli.js setup",
+    "test": "node --test src/**/*.test.js",
+    "lint": "eslint src/"
+  },
+  "keywords": [
+    "knowledge-management",
+    "embedding",
+    "vector-search",
+    "mcp",
+    "semantic-search",
+    "rag"
+  ],
+  "author": "iSDLC",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/isdlc/isdlc-knowledge-service.git"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
