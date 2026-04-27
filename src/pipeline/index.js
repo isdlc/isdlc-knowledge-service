@@ -27,6 +27,7 @@ import { createHash } from 'node:crypto';
 
 import { chunkContent } from './chunker.js';
 import { enrich } from './enricher.js';
+import { extractTraceabilityMetadata } from './metadata-vocabulary.js';
 
 /**
  * @typedef {object} EmbeddedChunk
@@ -45,6 +46,8 @@ import { enrich } from './enricher.js';
  * @property {string} [project]   Override the project name resolved from
  *                                `chunk.metadata.project`. When neither is
  *                                supplied the project resolves to "unknown".
+ * @property {import('./metadata-vocabulary.js').MetadataVocabularyConfig} [metadata_vocabulary]
+ *                                Project-level custom linked_* fields.
  */
 
 /**
@@ -111,6 +114,7 @@ export async function* embed(chunks, modelAdapter, options = {}) {
         vector: vectors[i],
         content: enriched[i],
         metadata: {
+          ...extractTraceabilityMetadata(chunk.metadata, options.metadata_vocabulary),
           path: chunk.path ?? '',
           source_type: chunk.source_type ?? 'unknown',
           source_url: chunk.source_url ?? '',

@@ -25,6 +25,8 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { validateDeploymentVocabulary } from '../pipeline/metadata-vocabulary.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const HEALTH_TIMEOUT_MS = 30_000;
 const HEALTH_INTERVAL_MS = 500;
@@ -43,6 +45,17 @@ export async function runStart(opts = {}) {
   const config = await readConfig().catch((err) => {
     throw new Error(`Could not read config at ${configPath} — run \`isdlc-knowledge setup\` first. (${err.message})`);
   });
+
+  // REQ-GH-7 FR-002: validate deployment-wide metadata vocabulary BEFORE
+  // forking children. An invalid block fails fast — no half-spawned state.
+  const vocabErrors = validateDeploymentVocabulary(config);
+  if (vocabErrors.length > 0) {
+    write(`Invalid metadata_vocabulary in ${configPath}:`);
+    for (const e of vocabErrors) write(`  - ${e}`);
+    throw new Error(
+      `Deployment metadata_vocabulary in ${configPath} is invalid. Fix the errors above and re-run.`,
+    );
+  }
 
   const spawn = opts._spawn || ((mod, args, o) => nodeFork(mod, args, o));
   const fetchFn = opts._fetch;

@@ -8,6 +8,7 @@ import { readFile, writeFile, mkdir, rm, readdir, rename, stat } from 'node:fs/p
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { isCredentialReference } from '../credentials/resolver.js';
+import { validateMetadataVocabularyConfig } from '../pipeline/metadata-vocabulary.js';
 
 const DEFAULT_DATA_DIR = './data';
 const PROJECTS_SUBDIR = 'projects';
@@ -69,6 +70,50 @@ function assertCredentialsAreReferences(config) {
       );
     }
   }
+}
+
+/**
+ * Validate the project-level metadata vocabulary extension point. Built-in
+ * GH#7 fields are always available; config may only add custom linked_* fields.
+ *
+ * @param {object} config
+ */
+function assertMetadataVocabularyIsValid(config) {
+  const errors = validateMetadataVocabularyConfig(config);
+  if (errors.length > 0) {
+    throw new InvalidProjectError(errors.join('; '));
+  }
+}
+
+/**
+ * Reject any project-level custom_link_fields that overlap with the
+ * deployment-wide custom_link_fields. Adopters declare the deployment baseline
+ * once in `data/config.json`; project configs MUST NOT redeclare those fields.
+ *
+ * Only fires on createProject / updateProject paths — readConfig stays
+ * deployment-agnostic since the store may be read before the deployment vocab
+ * is wired (legacy callers).
+ *
+ * @param {object} config                           Project config or update patch.
+ * @param {string[] | undefined | null} deploymentFields
+ *   The deployment-wide custom_link_fields list (already validated).
+ */
+function assertNoDeploymentOverlap(config, deploymentFields) {
+  if (!Array.isArray(deploymentFields) || deploymentFields.length === 0) return;
+  const projectFields = config?.metadata_vocabulary?.custom_link_fields;
+  if (!Array.isArray(projectFields) || projectFields.length === 0) return;
+
+  const deploymentSet = new Set(deploymentFields);
+  const conflicts = projectFields.filter((f) => deploymentSet.has(f));
+  if (conflicts.length === 0) return;
+
+  const list = conflicts.join(', ');
+  throw new InvalidProjectError(
+    `metadata_vocabulary.custom_link_fields conflicts with deployment-level declaration ` +
+      `(field${conflicts.length > 1 ? 's' : ''}: ${list}). ` +
+      `Remove ${conflicts.length > 1 ? 'these fields' : 'this field'} from the project config — ` +
+      `${conflicts.length > 1 ? 'they are' : 'it is'} already declared deployment-wide in data/config.json.`,
+  );
 }
 
 /**
@@ -157,6 +202,7 @@ function assertValidId(id) {
  * @property {Array<object>} sources
  * @property {object} model_config
  * @property {object} vectordb_config
+ * @property {import('../pipeline/metadata-vocabulary.js').MetadataVocabularyConfig} [metadata_vocabulary]
  * @property {string} created_at
  * @property {string} updated_at
  */
@@ -171,7 +217,9 @@ function assertValidId(id) {
 async function readConfig(dataDir, id) {
   try {
     const raw = await readFile(configPath(dataDir, id), 'utf8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    assertMetadataVocabularyIsValid(parsed);
+    return parsed;
   } catch (err) {
     if (err.code === 'ENOENT') return null;
     throw err;
@@ -184,10 +232,21 @@ async function readConfig(dataDir, id) {
  * The factory keeps state out of module scope so tests can use os.tmpdir()
  * isolation and the API server can wire a configured root at startup.
  *
- * @param {{ dataDir?: string }} [options]
+ * @param {{
+ *   dataDir?: string,
+ *   deploymentVocabulary?: import('../pipeline/metadata-vocabulary.js').MetadataVocabularyConfig | null,
+ * }} [options]
+ *   `deploymentVocabulary` is the validated deployment-wide vocabulary. When
+ *   present, project create/update rejects any custom_link_fields that overlap
+ *   with `deploymentVocabulary.custom_link_fields`. When absent (the legacy
+ *   default), only built-in redeclaration is rejected — behavior is unchanged
+ *   from before REQ-GH-7's deployment layer.
  */
 export function createProjectStore(options = {}) {
   const dataDir = options.dataDir ?? DEFAULT_DATA_DIR;
+  const deploymentFields = Array.isArray(options.deploymentVocabulary?.custom_link_fields)
+    ? [...options.deploymentVocabulary.custom_link_fields]
+    : null;
 
   /**
    * List all projects whose config.json is present under projects/.
@@ -237,6 +296,8 @@ export function createProjectStore(options = {}) {
       throw new InvalidProjectError('Project config is required');
     }
     assertCredentialsAreReferences(config);
+    assertMetadataVocabularyIsValid(config);
+    assertNoDeploymentOverlap(config, deploymentFields);
     const id = slugifyProjectId(config.name, config.version);
 
     const exists = await readConfig(dataDir, id);
@@ -254,6 +315,9 @@ export function createProjectStore(options = {}) {
       sources: Array.isArray(config.sources) ? config.sources : [],
       model_config: config.model_config ?? {},
       vectordb_config: config.vectordb_config ?? {},
+      ...(config.metadata_vocabulary !== undefined
+        ? { metadata_vocabulary: config.metadata_vocabulary }
+        : {}),
       created_at: now,
       updated_at: now,
     };
@@ -274,6 +338,8 @@ export function createProjectStore(options = {}) {
       throw new InvalidProjectError('Update payload is required');
     }
     assertCredentialsAreReferences(patch);
+    assertMetadataVocabularyIsValid(patch);
+    assertNoDeploymentOverlap(patch, deploymentFields);
     const current = await readConfig(dataDir, id);
     if (!current) {
       throw new InvalidProjectError(`Project not found: ${id}`);

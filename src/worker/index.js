@@ -19,6 +19,7 @@
 
 import { runFullRebuild } from './rebuild.js';
 import { runIncrementalRefresh } from './refresh.js';
+import { mergeVocabularies } from '../pipeline/metadata-vocabulary.js';
 
 const DEFAULT_POLL_INTERVAL_MS = 1000;
 
@@ -39,6 +40,12 @@ const DEFAULT_POLL_INTERVAL_MS = 1000;
  * @property {Function} vectorDbFactory
  * @property {object} modelManager
  * @property {object} [auditLogger]
+ * @property {import('../pipeline/metadata-vocabulary.js').MetadataVocabularyConfig | null} [deploymentVocabulary]
+ *   REQ-GH-7 deployment-wide custom_link_fields. Threaded into pipeline.embed
+ *   by each handler so chunks pick up deployment-level vocabulary in addition
+ *   to per-project vocabulary. The eventual worker entry-point bootstrap
+ *   reads this from `KNOWLEDGE_CONFIG.metadata_vocabulary` (set by start.js)
+ *   and passes it here.
  * @property {WorkerOptions} [options]
  * @property {object} [handlers]         Internal seam for tests — override
  *                                       full_rebuild / incremental_refresh /
@@ -77,6 +84,10 @@ export function startWorker(deps) {
     vectorDbFactory: deps.vectorDbFactory,
     modelManager: deps.modelManager,
     auditLogger: deps.auditLogger,
+    // REQ-GH-7 deployment-wide vocabulary baseline. Threaded into the
+    // pipeline.embed call by each handler so chunks pick up deployment-level
+    // custom_link_fields in addition to the project's own.
+    deploymentVocabulary: deps.deploymentVocabulary || null,
     options: { batchSize: options.batchSize },
   };
 
@@ -226,7 +237,10 @@ async function runAddContent(payload, deps) {
 
   let documentsProcessed = 0;
   const batch = [];
-  for await (const embedded of deps.pipeline.embed(correlated, modelAdapter, { project: projectId })) {
+  for await (const embedded of deps.pipeline.embed(correlated, modelAdapter, {
+    project: projectId,
+    metadata_vocabulary: mergeVocabularies(deps.deploymentVocabulary, project.metadata_vocabulary),
+  })) {
     batch.push(embedded);
   }
   if (batch.length > 0) {

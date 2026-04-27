@@ -1,0 +1,39 @@
+{
+  "source": "github",
+  "source_id": "GH-7",
+  "slug": "REQ-GH-7-typed-metadata-vocabulary-for-chunks-from-isdlc",
+  "item_type": "REQ",
+  "created_at": "2026-04-27T00:00:00.000Z",
+  "analysis_status": "analyzed",
+  "phases_completed": ["01-requirements", "02-impact-analysis"],
+  "topics_covered": ["requirements-definition", "technical-analysis"],
+  "codebase_hash": "83fdd3f",
+  "sizing_decision": {
+    "intensity": "light",
+    "effective_intensity": "light",
+    "recommended_intensity": "light",
+    "decided_at": "2026-04-27T00:00:00.000Z",
+    "reason": "small_scope_extension",
+    "user_prompted": true,
+    "forced_by_flag": false,
+    "overridden": false,
+    "overridden_to": null,
+    "file_count": 7,
+    "module_count": 4,
+    "risk_score": "low",
+    "coupling": "low",
+    "coverage_gaps": 0,
+    "fallback_source": null,
+    "fallback_attempted": false,
+    "light_skip_phases": ["03-architecture", "04-design"],
+    "epic_deferred": false,
+    "context": "manual"
+  },
+  "recommended_tier": "light",
+  "scope_note": "This artifact folder is the iSDLC framework view of GitHub issue #7. The per-project vocabulary layer was implemented off-framework in earlier commits (see git history on main). The remaining work to satisfy the GH#7 spec is the deployment-wide vocabulary layer captured below.",
+  "acceptance": {
+    "accepted_at": "2026-04-27T00:00:00.000Z",
+    "domains": ["requirements", "impact-analysis", "tasks"],
+    "amendment_cycles": 0
+  }
+}

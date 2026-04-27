@@ -55,6 +55,9 @@ File: `data/projects/{id}/config.json`
     { "type": "gdocs",      "url": "drive.google.com/drive/folders/abc123" },
     { "type": "filesystem", "url": "/mnt/shared/payments-2.7-docs" }
   ],
+  "metadata_vocabulary": {
+    "custom_link_fields": ["linked_compliance_check"]
+  },
   "model_config": {
     "source": "local",                       // "local" | "cloud"
     "model_name": "jina-v2-base-code",       // local: ONNX model id; cloud: provider model id
@@ -76,6 +79,7 @@ File: `data/projects/{id}/config.json`
 **Field notes:**
 - `id` is `{slug(name)}-{version}` — guaranteed unique (FR-001 AC-001-05). Validated by `409 duplicate name+version` on POST `/api/projects`.
 - `sources[]` is the unified shape across all six connector types — discriminated by `type`.
+- `metadata_vocabulary.custom_link_fields[]` declares project-specific traceability metadata fields. Each entry must be lowercase snake_case, start with `linked_`, and must not duplicate a built-in `linked_*` field.
 - `api_key_ref` and `credentials_ref` are **always references** (env var name, secret store id) — credentials are never persisted in `config.json` (security NFR).
 - `precision` is mutated only via PUT; per AC-009-05, a precision change triggers a full rebuild for that project only.
 
@@ -138,9 +142,87 @@ Output of every connector — Module 4.
   "source_type": "git",
   "source_url": "git.company.com/payments/blob/release-2.7/src/payments/charge.ts",
   "last_modified": "2026-04-20T11:30:00Z",
-  "metadata": { "branch": "release/2.7", "lines": [12, 84] }
+  "metadata": {
+    "branch": "release/2.7",
+    "lines": [12, 84],
+    "artifact_type": "fr",
+    "artifact_id": "FR-007",
+    "linked_ac": ["AC-007-01", "AC-007-02"],
+    "linked_adr": ["ADR-003"],
+    "linked_test_case": ["TC-007-01"],
+    "motivated_by": "REQ-GH-263",
+    "provenance": "docs/requirements/requirements-spec.md:42",
+    "link_confidence": 1.0
+  }
 }
 ```
+
+#### GH#7 Traceability Metadata Vocabulary
+
+Traceable iSDLC artifact connectors may add the following fields under `NormalisedChunk.metadata`. The embedding pipeline preserves valid fields into `EmbeddedChunk.metadata`, so they ride with the vector DB record. There is no separate graph table or substrate.
+
+| Field | Type | Notes |
+|---|---|---|
+| `artifact_type` | string | One of `requirement`, `fr`, `ac`, `nfr`, `adr`, `module`, `test_case`, `task`, `review`, `risk`, `feature`, `convention`, `code`, `bug_report`, `trace_analysis`, or a project-specific custom type. |
+| `artifact_id` | string | External ID such as `FR-001`, `AC-001-03`, `ADR-007`, or `BUG-GH-265`. |
+| `linked_fr` | string[] | FR IDs this chunk relates to. |
+| `linked_ac` | string[] | Acceptance criteria IDs covered or referenced. |
+| `linked_adr` | string[] | ADR IDs that decided this scope. |
+| `linked_module` | string[] | Module IDs from module design artifacts. |
+| `linked_test_case` | string[] | Test case IDs covering this chunk. |
+| `linked_task` | string[] | Task IDs from `tasks.md`. |
+| `linked_review` | string[] | Review record IDs. |
+| `linked_risk` | string[] | Risk IDs. |
+| `linked_nfr` | string[] | NFR IDs. |
+| `linked_feature` | string[] | Feature IDs from discovery outputs. |
+| `linked_bug_fix` | string[] | Bug fix IDs such as GitHub issue numbers or `REQ-GH-XXX`. |
+| `motivated_by` | string | Single artifact ID that motivated this chunk. |
+| `provenance` | string | File and line that produced the link, for debugging. |
+| `link_confidence` | number | `0.0` to `1.0`; use `1.0` for deterministic links and lower values for heuristic links. |
+
+Custom link fields are declared per project in `metadata_vocabulary.custom_link_fields[]`. They must be lowercase snake_case and start with `linked_`, for example `linked_compliance_check`. Undeclared custom fields are ignored by the embedding pipeline.
+
+#### Layered Vocabulary (REQ-GH-7)
+
+Custom `linked_*` fields can be declared at two layers:
+
+1. **Built-in** — the `linked_*` fields enumerated in the table above. Always in scope. Cannot be redeclared.
+2. **Deployment-wide** — declared once in `data/config.json` under `metadata_vocabulary.custom_link_fields[]`. Applies to every project on the deployment. Validated at `isdlc-knowledge start` time; an invalid block aborts startup before either child process is forked.
+3. **Per-project** — declared in `data/projects/{id}/config.json` under the same key. Adds project-specific fields on top of the deployment baseline. Validated on `createProject` / `updateProject` and on read-from-disk.
+
+The **effective vocabulary** at chunk-extract time is the union of built-ins ∪ deployment ∪ project, de-duplicated. The Worker handlers (`runFullRebuild`, `runIncrementalRefresh`, `runAddContent`) merge the deployment and project vocabularies before passing the result to the embedding pipeline; the pipeline itself stays vocabulary-agnostic.
+
+**Overlap rules**:
+- A deployment field MUST NOT redeclare a built-in.
+- A project field MUST NOT redeclare a built-in.
+- A project field MUST NOT redeclare a field already declared deployment-wide. `createProject` / `updateProject` rejects the project config with a clear error naming the conflicting field and identifying it as a deployment-level declaration.
+
+**Worked example**:
+
+```jsonc
+// data/config.json (deployment baseline)
+{
+  "server": { "host": "127.0.0.1", "api_port": 3000, "mcp_port": 0 },
+  "metadata_vocabulary": {
+    "custom_link_fields": ["linked_jira_epic", "linked_compliance_check"]
+  }
+}
+
+// data/projects/payments-2.7/config.json (per-project addition)
+{
+  "id": "payments-2.7",
+  "metadata_vocabulary": {
+    "custom_link_fields": ["linked_squad"]
+  }
+}
+
+// Effective vocabulary on chunks from project payments-2.7:
+//   built-ins (linked_fr, linked_ac, ...)
+// + linked_jira_epic, linked_compliance_check  (from deployment)
+// + linked_squad                                (from project)
+```
+
+This satisfies the GH#7 spec target of "declared in deployment config; validated at startup" while preserving the per-project flexibility that adopters with heterogeneous artifact types need.
 
 ### 2.5 CorrelatedChunk (in-flight)
 Output of Module 5 — adds `related[]`.
@@ -170,6 +252,9 @@ Output of Module 5 — adds `related[]`.
     "path": "src/payments/charge.ts",
     "source_type": "git",
     "source_url": "...",
+    "artifact_type": "fr",
+    "artifact_id": "FR-007",
+    "linked_ac": ["AC-007-01", "AC-007-02"],
     "related_sources": [...]          // distilled from CorrelatedChunk.related
   }
 }

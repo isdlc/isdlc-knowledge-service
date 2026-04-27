@@ -32,6 +32,7 @@
 // Error handling: errors propagate to the worker loop for queue retry.
 
 import { stableChunkId } from '../pipeline/index.js';
+import { mergeVocabularies } from '../pipeline/metadata-vocabulary.js';
 
 // A single source file should never produce more than this many sub-chunks
 // at the embedding pipeline's smallest reasonable max_input_tokens.
@@ -129,8 +130,13 @@ export async function runIncrementalRefresh(payload, deps) {
       // Correlate within the changed set only (v1 limitation; see header).
       const correlated = await correlationEngine.correlate(chunks, project);
 
+      // REQ-GH-7 FR-004: merge deployment + project vocabularies before embed.
+      const effectiveVocab = mergeVocabularies(deps.deploymentVocabulary, project.metadata_vocabulary);
       let batch = [];
-      for await (const embedded of pipeline.embed(correlated, modelAdapter, { project: projectId })) {
+      for await (const embedded of pipeline.embed(correlated, modelAdapter, {
+        project: projectId,
+        metadata_vocabulary: effectiveVocab,
+      })) {
         batch.push(embedded);
         if (batch.length >= batchSize) {
           await vdb.store(batch);
