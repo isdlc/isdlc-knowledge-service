@@ -226,7 +226,10 @@ async function runAddContent(payload, deps) {
 
   let documentsProcessed = 0;
   const batch = [];
-  for await (const embedded of deps.pipeline.embed(correlated, modelAdapter, { project: projectId })) {
+  for await (const embedded of deps.pipeline.embed(correlated, modelAdapter, {
+    project: projectId,
+    metadata_vocabulary: project.metadata_vocabulary,
+  })) {
     batch.push(embedded);
   }
   if (batch.length > 0) {

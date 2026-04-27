@@ -23,12 +23,27 @@
         "req_id": "REQ-GH-263",
         "title": "Centralised vector DB carve-out / embedding server",
         "path": "docs/requirements/REQ-GH-263-centralised-vector-db-carve-out-embedding-server/",
-        "status": "analysed",
-        "phase_completed": "04-test-strategy-prep",
+        "status": "shipped",
+        "phase_completed": "08-code-review",
         "fr_count": 16,
         "task_count": 37,
         "adr_count": 4,
         "linked_at": "2026-04-25T13:55:00Z"
+      },
+      {
+        "req_id": "REQ-GH-7",
+        "title": "Typed metadata vocabulary for chunks from iSDLC artifacts",
+        "path": "docs/requirements/REQ-GH-7-typed-metadata-vocabulary-for-chunks-from-isdlc/",
+        "source": "github",
+        "source_id": "GH-7",
+        "status": "analysed",
+        "phase_completed": "02-impact-analysis",
+        "scope_note": "Per-project layer shipped off-framework. This REQ covers the remaining deployment-wide layer to satisfy the GH#7 spec.",
+        "fr_count": 5,
+        "task_count": 9,
+        "adr_count": 0,
+        "tier": "light",
+        "linked_at": "2026-04-28T00:00:00Z"
       }
     ]
   },
@@ -256,9 +271,19 @@
       "timestamp": "2026-04-26T00:15:00Z",
       "agent": "sdlc-orchestrator",
       "action": "REQ-GH-263 build workflow completed: 698/698 tests pass, Phase 08 PASS after BLOCKING-1 remediation, merged feature/REQ-GH-263 → main (merge commit 0f45dee). Workflow archived to history."
+    },
+    {
+      "timestamp": "2026-04-27T00:00:00Z",
+      "agent": "sdlc-orchestrator",
+      "action": "REQ-0001 analyzed (light tier): deployment-wide metadata vocabulary baseline. Phases 01-02 complete; tasks.md produced. Ready for /isdlc build."
+    },
+    {
+      "timestamp": "2026-04-28T00:00:00Z",
+      "agent": "sdlc-orchestrator",
+      "action": "Renamed REQ-0001 → REQ-GH-7 (correct framework convention for GitHub-sourced items). Scope unchanged: deployment-wide vocabulary layer. counters.next_req_id reverted 2 → 1."
     }
   ],
-  "state_version": 36,
+  "state_version": 38,
   "pending_escalations": [],
   "pending_delegation": null,
   "contract_violations": []

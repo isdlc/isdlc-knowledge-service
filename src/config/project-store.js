@@ -8,6 +8,7 @@ import { readFile, writeFile, mkdir, rm, readdir, rename, stat } from 'node:fs/p
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { isCredentialReference } from '../credentials/resolver.js';
+import { validateMetadataVocabularyConfig } from '../pipeline/metadata-vocabulary.js';
 
 const DEFAULT_DATA_DIR = './data';
 const PROJECTS_SUBDIR = 'projects';
@@ -68,6 +69,19 @@ function assertCredentialsAreReferences(config) {
         'ERR-API-004'
       );
     }
+  }
+}
+
+/**
+ * Validate the project-level metadata vocabulary extension point. Built-in
+ * GH#7 fields are always available; config may only add custom linked_* fields.
+ *
+ * @param {object} config
+ */
+function assertMetadataVocabularyIsValid(config) {
+  const errors = validateMetadataVocabularyConfig(config);
+  if (errors.length > 0) {
+    throw new InvalidProjectError(errors.join('; '));
   }
 }
 
@@ -157,6 +171,7 @@ function assertValidId(id) {
  * @property {Array<object>} sources
  * @property {object} model_config
  * @property {object} vectordb_config
+ * @property {import('../pipeline/metadata-vocabulary.js').MetadataVocabularyConfig} [metadata_vocabulary]
  * @property {string} created_at
  * @property {string} updated_at
  */
@@ -171,7 +186,9 @@ function assertValidId(id) {
 async function readConfig(dataDir, id) {
   try {
     const raw = await readFile(configPath(dataDir, id), 'utf8');
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    assertMetadataVocabularyIsValid(parsed);
+    return parsed;
   } catch (err) {
     if (err.code === 'ENOENT') return null;
     throw err;
@@ -237,6 +254,7 @@ export function createProjectStore(options = {}) {
       throw new InvalidProjectError('Project config is required');
     }
     assertCredentialsAreReferences(config);
+    assertMetadataVocabularyIsValid(config);
     const id = slugifyProjectId(config.name, config.version);
 
     const exists = await readConfig(dataDir, id);
@@ -254,6 +272,9 @@ export function createProjectStore(options = {}) {
       sources: Array.isArray(config.sources) ? config.sources : [],
       model_config: config.model_config ?? {},
       vectordb_config: config.vectordb_config ?? {},
+      ...(config.metadata_vocabulary !== undefined
+        ? { metadata_vocabulary: config.metadata_vocabulary }
+        : {}),
       created_at: now,
       updated_at: now,
     };
@@ -274,6 +295,7 @@ export function createProjectStore(options = {}) {
       throw new InvalidProjectError('Update payload is required');
     }
     assertCredentialsAreReferences(patch);
+    assertMetadataVocabularyIsValid(patch);
     const current = await readConfig(dataDir, id);
     if (!current) {
       throw new InvalidProjectError(`Project not found: ${id}`);

@@ -16,7 +16,7 @@
 //   5. correlationEngine.correlate(chunks, projectConfig)
 //   6. vdb.deleteAll() — wipe the index BEFORE writing new vectors so a partial
 //      crash leaves an empty (rebuildable) state rather than mixed old+new.
-//   7. pipeline.embed(correlated, modelAdapter, { project }) → batched
+//   7. pipeline.embed(correlated, modelAdapter, { project, metadata_vocabulary }) → batched
 //      vdb.store(batch). Stable IDs (sha256(project:path:chunkIndex)) keep
 //      this idempotent across retries (Constitution Article VI.2).
 //   8. configStore.addRefreshRecord({ type: 'full', status: 'success', … })
@@ -101,7 +101,10 @@ export async function runFullRebuild(payload, deps) {
 
     // 4. Embed and store in batches.
     let batch = [];
-    for await (const embedded of pipeline.embed(correlated, modelAdapter, { project: projectId })) {
+    for await (const embedded of pipeline.embed(correlated, modelAdapter, {
+      project: projectId,
+      metadata_vocabulary: project.metadata_vocabulary,
+    })) {
       batch.push(embedded);
       if (batch.length >= batchSize) {
         await vdb.store(batch);

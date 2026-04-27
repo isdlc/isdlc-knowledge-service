@@ -16,7 +16,11 @@
  * @property {string} source_type   Connector identifier ("git" | "svn" | …).
  * @property {string} source_url    Stable URL identifying this chunk in its source.
  * @property {string} last_modified ISO-8601 timestamp of the last modification.
- * @property {object} metadata      Connector-specific metadata bag.
+ * @property {object & import('../pipeline/metadata-vocabulary.js').TraceabilityMetadata} metadata
+ *                                  Connector-specific metadata bag. Traceable
+ *                                  iSDLC artifact connectors may add the GH#7
+ *                                  typed metadata fields documented in
+ *                                  docs/architecture/data-model.md.
  */
 
 /**

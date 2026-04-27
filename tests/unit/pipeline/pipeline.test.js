@@ -136,6 +136,33 @@ test('EmbeddedChunk metadata includes path, source_type, and source_url from the
   assert.equal(out[0].metadata.source_url, 'https://example.com/repo/src/payments.js');
 });
 
+test('EmbeddedChunk metadata preserves GH#7 traceability fields', async () => {
+  const adapter = makeFakeAdapter({ max_input_tokens: 4096 });
+  const chunks = [
+    makeCorrelatedChunk({
+      metadata: {
+        project: 'payments-2.7',
+        artifact_type: 'fr',
+        artifact_id: 'FR-007',
+        linked_ac: ['AC-007-01'],
+        linked_policy: ['POL-9'],
+        link_confidence: 1,
+        random: 'ignored',
+      },
+    }),
+  ];
+  const out = await collect(embed(chunks, adapter, {
+    metadata_vocabulary: { custom_link_fields: ['linked_policy'] },
+  }));
+
+  assert.equal(out[0].metadata.artifact_type, 'fr');
+  assert.equal(out[0].metadata.artifact_id, 'FR-007');
+  assert.deepEqual(out[0].metadata.linked_ac, ['AC-007-01']);
+  assert.deepEqual(out[0].metadata.linked_policy, ['POL-9']);
+  assert.equal(out[0].metadata.link_confidence, 1);
+  assert.equal(out[0].metadata.random, undefined);
+});
+
 /* ------------------------------------------------------------------ */
 /* Stable IDs (idempotency keystone — Constitution Article VI.2)      */
 /* ------------------------------------------------------------------ */

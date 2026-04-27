@@ -143,6 +143,45 @@ describe('createProject (UT-001 / AC-001-01)', () => {
     assert.equal(project.model_config.source, 'cloud');
     assert.equal(project.model_config.provider, 'openai');
   });
+
+  test('persists custom traceability metadata vocabulary', async () => {
+    const project = await store.createProject({
+      name: 'Traceable Project',
+      version: '1.0',
+      sources: [],
+      model_config: {},
+      vectordb_config: {},
+      metadata_vocabulary: {
+        custom_link_fields: ['linked_compliance_check'],
+      },
+    });
+
+    assert.deepEqual(project.metadata_vocabulary, {
+      custom_link_fields: ['linked_compliance_check'],
+    });
+
+    const onDisk = JSON.parse(
+      await readFile(join(dataDir, 'projects', 'traceable-project-1.0', 'config.json'), 'utf8'),
+    );
+    assert.deepEqual(onDisk.metadata_vocabulary, project.metadata_vocabulary);
+  });
+
+  test('rejects invalid custom traceability metadata vocabulary', async () => {
+    await assert.rejects(
+      () =>
+        store.createProject({
+          name: 'Bad Vocabulary',
+          version: '1.0',
+          sources: [],
+          model_config: {},
+          vectordb_config: {},
+          metadata_vocabulary: {
+            custom_link_fields: ['linked_FR'],
+          },
+        }),
+      (err) => err.code === 'INVALID_PROJECT' && /lowercase snake_case/.test(err.message),
+    );
+  });
 });
 
 describe('getProject', () => {
@@ -244,6 +283,24 @@ describe('updateProject (UT-002 / AC-001-02)', () => {
     });
     assert.equal(updated.id, 'payments-2.7');
   });
+
+  test('rejects update with invalid custom traceability metadata vocabulary', async () => {
+    await store.createProject({
+      name: 'Payments',
+      version: '2.7',
+      sources: [],
+      model_config: {},
+      vectordb_config: {},
+    });
+
+    await assert.rejects(
+      () =>
+        store.updateProject('payments-2.7', {
+          metadata_vocabulary: { custom_link_fields: ['linked_fr'] },
+        }),
+      (err) => err.code === 'INVALID_PROJECT' && /built-in field linked_fr/.test(err.message),
+    );
+  });
 });
 
 describe('deleteProject', () => {
@@ -309,6 +366,30 @@ describe('listProjects', () => {
     const projects = await store.listProjects();
     assert.equal(projects.length, 1);
     assert.equal(projects[0].id, 'payments-2.7');
+  });
+
+  test('validates custom traceability metadata vocabulary when reading config from disk', async () => {
+    const projectsRoot = join(dataDir, 'projects');
+    await mkdir(join(projectsRoot, 'bad-1'), { recursive: true });
+    await writeFile(
+      join(projectsRoot, 'bad-1', 'config.json'),
+      JSON.stringify({
+        id: 'bad-1',
+        name: 'Bad',
+        version: '1',
+        sources: [],
+        model_config: {},
+        vectordb_config: {},
+        metadata_vocabulary: { custom_link_fields: ['linked-foo'] },
+        created_at: 'T',
+        updated_at: 'T',
+      }),
+    );
+
+    await assert.rejects(
+      () => store.getProject('bad-1'),
+      (err) => err.code === 'INVALID_PROJECT' && /lowercase snake_case/.test(err.message),
+    );
   });
 });
 

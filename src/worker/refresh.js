@@ -130,7 +130,10 @@ export async function runIncrementalRefresh(payload, deps) {
       const correlated = await correlationEngine.correlate(chunks, project);
 
       let batch = [];
-      for await (const embedded of pipeline.embed(correlated, modelAdapter, { project: projectId })) {
+      for await (const embedded of pipeline.embed(correlated, modelAdapter, {
+        project: projectId,
+        metadata_vocabulary: project.metadata_vocabulary,
+      })) {
         batch.push(embedded);
         if (batch.length >= batchSize) {
           await vdb.store(batch);
