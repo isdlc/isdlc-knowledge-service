@@ -36,14 +36,16 @@
         "path": "docs/requirements/REQ-GH-7-typed-metadata-vocabulary-for-chunks-from-isdlc/",
         "source": "github",
         "source_id": "GH-7",
-        "status": "analysed",
-        "phase_completed": "02-impact-analysis",
-        "scope_note": "Per-project layer shipped off-framework. This REQ covers the remaining deployment-wide layer to satisfy the GH#7 spec.",
+        "status": "shipped",
+        "phase_completed": "08-code-review",
+        "scope_note": "Per-project layer shipped off-framework. This REQ added the deployment-wide layer to satisfy the GH#7 spec.",
         "fr_count": 5,
         "task_count": 9,
         "adr_count": 0,
         "tier": "light",
-        "linked_at": "2026-04-28T00:00:00Z"
+        "linked_at": "2026-04-28T00:00:00Z",
+        "merged_at": "2026-04-28T00:30:00Z",
+        "merge_commit": "d771adf"
       }
     ]
   },
@@ -103,49 +105,57 @@
     "enabled": true
   },
   "skill_usage_log": [],
-  "active_workflow": {
-    "type": "build",
-    "description": "Typed metadata vocabulary for chunks from iSDLC artifacts (REQ-GH-7)",
-    "started_at": "2026-04-28T00:00:00Z",
-    "status": "in_progress",
-    "phases": [
-      "05-test-strategy",
-      "06-implementation",
-      "16-quality-loop",
-      "08-code-review"
-    ],
-    "phase_status": {
-      "05-test-strategy": "completed",
-      "06-implementation": "completed",
-      "16-quality-loop": "completed",
-      "08-code-review": "completed"
-    },
-    "current_phase": "08-code-review",
-    "current_phase_index": 3,
-    "gate_mode": "strict",
-    "artifact_prefix": "REQ",
-    "artifact_folder": "REQ-GH-7-typed-metadata-vocabulary-for-chunks-from-isdlc",
-    "external_id": "GH-7",
-    "source": "github",
-    "source_id": "GH-7",
-    "branch": "feature/REQ-GH-7-typed-metadata-vocabulary-for-chunks-from-isdlc",
-    "sizing": {
-      "intensity": "light",
-      "effective_intensity": "light",
-      "recommended_by": "framework",
-      "overridden": false,
-      "light_skip_phases": [
-        "03-architecture",
-        "04-design"
-      ]
-    },
-    "flags": {},
-    "git_branch": {
-      "name": "feature/REQ-GH-7-typed-metadata-vocabulary-for-chunks-from-isdlc"
-    },
-    "budget_status": "on_track"
-  },
+  "active_workflow": null,
   "workflow_history": [
+    {
+      "type": "build",
+      "description": "Typed metadata vocabulary for chunks from iSDLC artifacts (REQ-GH-7)",
+      "started_at": "2026-04-28T00:00:00Z",
+      "completed_at": "2026-04-28T00:30:00Z",
+      "status": "completed",
+      "phases": [
+        "05-test-strategy",
+        "06-implementation",
+        "16-quality-loop",
+        "08-code-review"
+      ],
+      "phase_status": {
+        "05-test-strategy": "completed",
+        "06-implementation": "completed",
+        "16-quality-loop": "completed",
+        "08-code-review": "completed"
+      },
+      "gate_mode": "strict",
+      "artifact_prefix": "REQ",
+      "artifact_folder": "REQ-GH-7-typed-metadata-vocabulary-for-chunks-from-isdlc",
+      "external_id": "GH-7",
+      "source": "github",
+      "source_id": "GH-7",
+      "branch": "feature/REQ-GH-7-typed-metadata-vocabulary-for-chunks-from-isdlc",
+      "merged_into": "main",
+      "merge_commit": "d771adf",
+      "sizing": {
+        "intensity": "light",
+        "effective_intensity": "light",
+        "recommended_by": "framework",
+        "overridden": false,
+        "light_skip_phases": ["03-architecture", "04-design"]
+      },
+      "flags": {},
+      "git_branch": {
+        "name": "feature/REQ-GH-7-typed-metadata-vocabulary-for-chunks-from-isdlc"
+      },
+      "metrics": {
+        "total_phases": 4,
+        "phases_completed": 4,
+        "tests_added": 23,
+        "tests_total_passing": 715,
+        "tests_failed": 0,
+        "phase_16_iterations": 1,
+        "gates_passed_first_try": 4,
+        "gates_required_iteration": 0
+      }
+    },
     {
       "type": "build",
       "description": "Centralised vector DB carve-out / embedding server (REQ-GH-263)",
@@ -364,9 +374,14 @@
       "timestamp": "2026-04-28T00:00:00Z",
       "agent": "sdlc-orchestrator",
       "action": "Renamed REQ-0001 → REQ-GH-7 (correct framework convention for GitHub-sourced items). Scope unchanged: deployment-wide vocabulary layer. counters.next_req_id reverted 2 → 1."
+    },
+    {
+      "timestamp": "2026-04-28T00:30:00Z",
+      "agent": "sdlc-orchestrator",
+      "action": "REQ-GH-7 build workflow completed: 715/715 tests pass (23 new), Phase 08 PASS first try, merged feature/REQ-GH-7 → main (merge commit d771adf). Workflow archived to history."
     }
   ],
-  "state_version": 40,
+  "state_version": 41,
   "pending_escalations": [],
   "pending_delegation": null,
   "contract_violations": []
