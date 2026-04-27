@@ -182,6 +182,48 @@ Traceable iSDLC artifact connectors may add the following fields under `Normalis
 
 Custom link fields are declared per project in `metadata_vocabulary.custom_link_fields[]`. They must be lowercase snake_case and start with `linked_`, for example `linked_compliance_check`. Undeclared custom fields are ignored by the embedding pipeline.
 
+#### Layered Vocabulary (REQ-GH-7)
+
+Custom `linked_*` fields can be declared at two layers:
+
+1. **Built-in** — the `linked_*` fields enumerated in the table above. Always in scope. Cannot be redeclared.
+2. **Deployment-wide** — declared once in `data/config.json` under `metadata_vocabulary.custom_link_fields[]`. Applies to every project on the deployment. Validated at `isdlc-knowledge start` time; an invalid block aborts startup before either child process is forked.
+3. **Per-project** — declared in `data/projects/{id}/config.json` under the same key. Adds project-specific fields on top of the deployment baseline. Validated on `createProject` / `updateProject` and on read-from-disk.
+
+The **effective vocabulary** at chunk-extract time is the union of built-ins ∪ deployment ∪ project, de-duplicated. The Worker handlers (`runFullRebuild`, `runIncrementalRefresh`, `runAddContent`) merge the deployment and project vocabularies before passing the result to the embedding pipeline; the pipeline itself stays vocabulary-agnostic.
+
+**Overlap rules**:
+- A deployment field MUST NOT redeclare a built-in.
+- A project field MUST NOT redeclare a built-in.
+- A project field MUST NOT redeclare a field already declared deployment-wide. `createProject` / `updateProject` rejects the project config with a clear error naming the conflicting field and identifying it as a deployment-level declaration.
+
+**Worked example**:
+
+```jsonc
+// data/config.json (deployment baseline)
+{
+  "server": { "host": "127.0.0.1", "api_port": 3000, "mcp_port": 0 },
+  "metadata_vocabulary": {
+    "custom_link_fields": ["linked_jira_epic", "linked_compliance_check"]
+  }
+}
+
+// data/projects/payments-2.7/config.json (per-project addition)
+{
+  "id": "payments-2.7",
+  "metadata_vocabulary": {
+    "custom_link_fields": ["linked_squad"]
+  }
+}
+
+// Effective vocabulary on chunks from project payments-2.7:
+//   built-ins (linked_fr, linked_ac, ...)
+// + linked_jira_epic, linked_compliance_check  (from deployment)
+// + linked_squad                                (from project)
+```
+
+This satisfies the GH#7 spec target of "declared in deployment config; validated at startup" while preserving the per-project flexibility that adopters with heterogeneous artifact types need.
+
 ### 2.5 CorrelatedChunk (in-flight)
 Output of Module 5 — adds `related[]`.
 ```json

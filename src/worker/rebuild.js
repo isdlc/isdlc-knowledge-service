@@ -25,6 +25,8 @@
 // Errors propagate to the worker loop, which calls queue.fail(id, err). The
 // queue handles retry / dead-letter — this module does NOT swallow errors.
 
+import { mergeVocabularies } from '../pipeline/metadata-vocabulary.js';
+
 const DEFAULT_BATCH_SIZE = 50;
 
 /**
@@ -38,6 +40,9 @@ const DEFAULT_BATCH_SIZE = 50;
  * @property {(vectordbConfig: object) => object} vectorDbFactory
  * @property {{ getAdapter: (model_config: object) => object }} modelManager
  * @property {{ log: (action: string, details: object) => Promise<void> }} [auditLogger]
+ * @property {import('../pipeline/metadata-vocabulary.js').MetadataVocabularyConfig | null} [deploymentVocabulary]
+ *   REQ-GH-7 deployment-wide custom_link_fields, merged with project-level
+ *   metadata_vocabulary before being passed to pipeline.embed.
  * @property {{ batchSize?: number, triggerSource?: string }} [options]
  */
 
@@ -100,10 +105,13 @@ export async function runFullRebuild(payload, deps) {
     await vdb.deleteAll();
 
     // 4. Embed and store in batches.
+    // REQ-GH-7 FR-004: pass the merged deployment + project vocabulary so
+    // chunks pick up custom linked_* fields declared at either layer.
+    const effectiveVocab = mergeVocabularies(deps.deploymentVocabulary, project.metadata_vocabulary);
     let batch = [];
     for await (const embedded of pipeline.embed(correlated, modelAdapter, {
       project: projectId,
-      metadata_vocabulary: project.metadata_vocabulary,
+      metadata_vocabulary: effectiveVocab,
     })) {
       batch.push(embedded);
       if (batch.length >= batchSize) {

@@ -147,6 +147,57 @@ export function customLinkFields(vocabulary = {}) {
 }
 
 /**
+ * Validate the deployment-wide metadata vocabulary block read from
+ * `data/config.json`. Returns an array of error strings (empty when valid).
+ *
+ * Expected shape (all keys optional):
+ *   { metadata_vocabulary: { custom_link_fields: ["linked_jira_epic", ...] } }
+ *
+ * Same field rules as the per-project validator: lowercase snake_case,
+ * `linked_` prefix, no built-in redeclaration, no in-list duplicates.
+ *
+ * @param {object | undefined | null} deploymentConfig
+ * @returns {string[]}
+ */
+export function validateDeploymentVocabulary(deploymentConfig = {}) {
+  // Reuse the per-project validator — the shape under metadata_vocabulary is
+  // identical at deployment level. Error labels are emitted with the same
+  // metadata_vocabulary.* prefix so messages stay self-describing.
+  return validateMetadataVocabularyConfig(deploymentConfig);
+}
+
+/**
+ * Merge a deployment-wide vocabulary with a per-project vocabulary, returning a
+ * new MetadataVocabularyConfig whose `custom_link_fields` is the de-duplicated
+ * union of both inputs (deployment first, then project additions).
+ *
+ * Defensive: never mutates either input. Either argument may be undefined or
+ * null. When both are absent, returns `{ custom_link_fields: [] }`.
+ *
+ * Built-in fields are NOT merged here — they are always in scope at extract
+ * time via the BUILTIN_LINK_FIELDS set. This function only carries the
+ * adopter-declared custom fields.
+ *
+ * @param {MetadataVocabularyConfig | undefined | null} deploymentVocab
+ * @param {MetadataVocabularyConfig | undefined | null} projectVocab
+ * @returns {MetadataVocabularyConfig}
+ */
+export function mergeVocabularies(deploymentVocab, projectVocab) {
+  const deployment = Array.isArray(deploymentVocab?.custom_link_fields)
+    ? deploymentVocab.custom_link_fields
+    : [];
+  const project = Array.isArray(projectVocab?.custom_link_fields)
+    ? projectVocab.custom_link_fields
+    : [];
+
+  // Use a Set to de-duplicate; preserve insertion order so deployment fields
+  // come first (informational — order is not semantically meaningful).
+  const merged = [...new Set([...deployment, ...project])];
+
+  return { custom_link_fields: merged };
+}
+
+/**
  * Extract well-formed traceability metadata from a connector-supplied metadata
  * bag. Invalid values are ignored so a malformed source chunk does not poison
  * the vector index.

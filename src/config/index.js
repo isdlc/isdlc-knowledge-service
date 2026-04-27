@@ -18,7 +18,12 @@ import { createRefreshHistoryStore, MAX_HISTORY_ENTRIES } from './refresh-histor
 /**
  * Compose the project + refresh-history stores into one config store.
  *
- * @param {{ dataDir?: string }} [options]
+ * @param {{
+ *   dataDir?: string,
+ *   deploymentVocabulary?: import('../pipeline/metadata-vocabulary.js').MetadataVocabularyConfig | null,
+ * }} [options]
+ *   `deploymentVocabulary` is forwarded to the project store and used to reject
+ *   project-level custom_link_fields that overlap with the deployment baseline.
  */
 export function createConfigStore(options = {}) {
   const projects = createProjectStore(options);

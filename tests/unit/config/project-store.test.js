@@ -393,6 +393,134 @@ describe('listProjects', () => {
   });
 });
 
+describe('deployment vocabulary overlap (REQ-GH-7 FR-003)', () => {
+  test('createProject accepts non-overlapping custom_link_fields when deployment baseline exists (AC-003-01)', async () => {
+    const store = createProjectStore({
+      dataDir,
+      deploymentVocabulary: { custom_link_fields: ['linked_jira_epic'] },
+    });
+    const project = await store.createProject({
+      name: 'Squad Project',
+      version: '1.0',
+      sources: [],
+      model_config: {},
+      vectordb_config: {},
+      metadata_vocabulary: { custom_link_fields: ['linked_squad'] },
+    });
+    assert.deepEqual(project.metadata_vocabulary, {
+      custom_link_fields: ['linked_squad'],
+    });
+  });
+
+  test('createProject rejects custom_link_fields that overlap with deployment baseline (AC-003-02)', async () => {
+    const store = createProjectStore({
+      dataDir,
+      deploymentVocabulary: { custom_link_fields: ['linked_jira_epic'] },
+    });
+    await assert.rejects(
+      () =>
+        store.createProject({
+          name: 'Conflict Project',
+          version: '1.0',
+          sources: [],
+          model_config: {},
+          vectordb_config: {},
+          metadata_vocabulary: { custom_link_fields: ['linked_jira_epic'] },
+        }),
+      (err) =>
+        err.code === 'INVALID_PROJECT' &&
+        /linked_jira_epic/.test(err.message) &&
+        /deployment-wide/.test(err.message),
+    );
+  });
+
+  test('createProject lists all conflicts in error message when multiple overlap', async () => {
+    const store = createProjectStore({
+      dataDir,
+      deploymentVocabulary: {
+        custom_link_fields: ['linked_jira_epic', 'linked_compliance_check'],
+      },
+    });
+    await assert.rejects(
+      () =>
+        store.createProject({
+          name: 'Multi Conflict',
+          version: '1.0',
+          sources: [],
+          model_config: {},
+          vectordb_config: {},
+          metadata_vocabulary: {
+            custom_link_fields: ['linked_jira_epic', 'linked_compliance_check', 'linked_safe'],
+          },
+        }),
+      (err) => {
+        assert.equal(err.code, 'INVALID_PROJECT');
+        assert.match(err.message, /linked_jira_epic/);
+        assert.match(err.message, /linked_compliance_check/);
+        assert.doesNotMatch(err.message, /linked_safe/);
+        return true;
+      },
+    );
+  });
+
+  test('updateProject enforces overlap rule (AC-003-03)', async () => {
+    const store = createProjectStore({
+      dataDir,
+      deploymentVocabulary: { custom_link_fields: ['linked_jira_epic'] },
+    });
+    await store.createProject({
+      name: 'Update Project',
+      version: '1.0',
+      sources: [],
+      model_config: {},
+      vectordb_config: {},
+    });
+
+    await assert.rejects(
+      () =>
+        store.updateProject('update-project-1.0', {
+          metadata_vocabulary: { custom_link_fields: ['linked_jira_epic'] },
+        }),
+      (err) =>
+        err.code === 'INVALID_PROJECT' &&
+        /linked_jira_epic/.test(err.message) &&
+        /deployment-wide/.test(err.message),
+    );
+  });
+
+  test('store without deploymentVocabulary preserves legacy behavior (AC-003-04)', async () => {
+    // No deploymentVocabulary option — only built-in redeclaration is rejected.
+    const store = createProjectStore({ dataDir });
+    const project = await store.createProject({
+      name: 'Legacy Project',
+      version: '1.0',
+      sources: [],
+      model_config: {},
+      vectordb_config: {},
+      // This field is NOT a built-in and there is no deployment baseline,
+      // so it must be accepted (matching pre-REQ-GH-7 behavior).
+      metadata_vocabulary: { custom_link_fields: ['linked_jira_epic'] },
+    });
+    assert.deepEqual(project.metadata_vocabulary.custom_link_fields, ['linked_jira_epic']);
+  });
+
+  test('empty deployment baseline does not engage overlap check', async () => {
+    const store = createProjectStore({
+      dataDir,
+      deploymentVocabulary: { custom_link_fields: [] },
+    });
+    const project = await store.createProject({
+      name: 'Empty Baseline',
+      version: '1.0',
+      sources: [],
+      model_config: {},
+      vectordb_config: {},
+      metadata_vocabulary: { custom_link_fields: ['linked_anything'] },
+    });
+    assert.deepEqual(project.metadata_vocabulary.custom_link_fields, ['linked_anything']);
+  });
+});
+
 describe('credential validator (BLOCKING-1 remediation, Articles V.5/VII.5/VII.6)', () => {
   test('rejects bare api_key in model_config with ERR-API-004', async () => {
     await assert.rejects(
