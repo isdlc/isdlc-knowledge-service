@@ -4,7 +4,7 @@ Marker legend: `[ ]` raw — `[~]` partial — `[A]` analyzed — `[x]` shipped.
 
 ## Open
 
-_(none — all open items shipped)_
+- [A] REQ-GH-3 — State store: Postgres-only with JSON import/export and pg-boss queue
 
 ## Shipped
 

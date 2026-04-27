@@ -1,0 +1,36 @@
+{
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Operator configures Postgres-backed runtime state",
+      "as_a": "service operator",
+      "i_want": "setup and start to use .ks/config.json and a reachable Postgres database",
+      "so_that": "runtime state is consistent across API, worker, and CLI processes",
+      "acceptance_criteria": ["AC-002-01", "AC-002-02", "AC-003-01", "AC-010-02"]
+    },
+    {
+      "id": "US-002",
+      "title": "Developer imports and exports config as code",
+      "as_a": "project maintainer",
+      "i_want": "JSON import/export for one project, all projects, or full deployment",
+      "so_that": "state can be reviewed, versioned, debugged, and moved between environments",
+      "acceptance_criteria": ["AC-007-01", "AC-007-02", "AC-007-03", "AC-007-04"]
+    },
+    {
+      "id": "US-003",
+      "title": "Worker processes durable Postgres-backed jobs",
+      "as_a": "service operator",
+      "i_want": "the worker to use a maintained Postgres queue",
+      "so_that": "retry, dead-letter, and observability behavior are not custom SQLite logic",
+      "acceptance_criteria": ["AC-006-01", "AC-006-02", "AC-006-03", "AC-006-04"]
+    },
+    {
+      "id": "US-004",
+      "title": "Auditor trusts append-only DB audit records",
+      "as_a": "auditor",
+      "i_want": "audit rows protected by database roles",
+      "so_that": "normal app credentials cannot mutate history",
+      "acceptance_criteria": ["AC-005-01", "AC-005-02", "AC-005-03", "AC-005-04"]
+    }
+  ]
+}

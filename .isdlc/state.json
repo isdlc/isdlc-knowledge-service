@@ -46,6 +46,22 @@
         "linked_at": "2026-04-28T00:00:00Z",
         "merged_at": "2026-04-28T00:30:00Z",
         "merge_commit": "d771adf"
+      },
+      {
+        "req_id": "REQ-GH-3",
+        "title": "State store: Postgres-only with JSON import/export and pg-boss queue",
+        "path": "docs/requirements/REQ-GH-3-state-store-postgres-only-json-import-export-pgboss/",
+        "source": "github",
+        "source_id": "GH-3",
+        "status": "analysed",
+        "phase_completed": "04-design",
+        "scope_note": "Full GH-3 scope accepted with two amendments: no Docker auto-launch (manual Postgres), and DB E2E skips when unconfigured.",
+        "fr_count": 10,
+        "task_count": 17,
+        "adr_count": 0,
+        "tier": "epic",
+        "tier_effective": "standard",
+        "linked_at": "2026-04-28T01:00:00Z"
       }
     ]
   },
@@ -379,9 +395,14 @@
       "timestamp": "2026-04-28T00:30:00Z",
       "agent": "sdlc-orchestrator",
       "action": "REQ-GH-7 build workflow completed: 715/715 tests pass (23 new), Phase 08 PASS first try, merged feature/REQ-GH-7 → main (merge commit d771adf). Workflow archived to history."
+    },
+    {
+      "timestamp": "2026-04-28T01:00:00Z",
+      "agent": "sdlc-orchestrator",
+      "action": "REQ-GH-3 registered with epic-tier analysis (deferred to standard per CON-003). Phases 01-04 complete; tasks.md has 17 tasks. Ready for /isdlc build. Backlog and BACKLOG.md updated with analysis-baseline registration."
     }
   ],
-  "state_version": 41,
+  "state_version": 42,
   "pending_escalations": [],
   "pending_delegation": null,
   "contract_violations": []

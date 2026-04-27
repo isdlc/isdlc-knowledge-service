@@ -1,0 +1,17 @@
+| FR | Requirement | Design / Blast Radius | Related Tasks |
+|---|---|---|---|
+| FR-001 | Node runtime moves to 22.12.0 or newer so pg-boss can be used. AC-001-01: engine updated. AC-001-02: pg and pg-boss added. AC-001-03: docs mention runtime. | Touches package metadata and runtime docs. Forces CI/local runtime alignment before queue work. package.json (MODIFY) package-lock.json (MODIFY) README.md (MODIFY) | T002 Runtime baseline |
+| FR-002 | .ks/config.json becomes the single runtime config. data/config.json and per-project JSON are no longer runtime state. | Adds service config loader and rewires setup/start/API/worker config handoff. src/config/service-config.js (CREATE) src/cli/setup.js (MODIFY) src/cli/start.js (MODIFY) | T003 Service config, T011 Runtime wiring |
+| FR-003 | Postgres is the strict runtime state substrate with no SQLite fallback. | Adds DB pool, migration runner, schema, health checks, and startup validation. src/db/* (CREATE) migrations under src/db/migrations (CREATE) | T004 Postgres foundation |
+| FR-004 | All DB-backed state flows through one data access boundary. | Adds state layer and rewires project config plus refresh history stores. src/state/* (CREATE) src/config/* (MODIFY) | T005 State layer |
+| FR-005 | Audit moves to Postgres with DB-level append-only enforcement. | Adds audit table, grants, postgres audit logger, and maintenance purge role. src/audit/postgres-logger.js (CREATE) src/audit/logger.js (MODIFY) | T006 DB audit |
+| FR-006 | Custom SQLite queue is replaced with pg-boss while preserving job semantics. | Adds pg-boss adapter and worker lifecycle integration; removes custom SQLite runtime queue. src/queue/* (MODIFY) src/worker/* (MODIFY) | T007 Queue adapter, T008 Worker wiring |
+| FR-007 | JSON becomes import/export, including operational history and all selected DB-backed state. | Adds CLI config import/export commands backed by DB transactions and version validation. src/cli/config.js (CREATE) src/cli/commands.js (MODIFY) | T009 Import/export |
+| FR-008 | Vector storage remains unchanged. | Vector modules are regression-only. sqlite-vec remains supported even if better-sqlite3 queue dependency is removed. src/vectordb/* (UNCHANGED) | T010 Vector regression |
+| FR-009 | DB E2E is configurable and skipped when DB config is absent. | Adds test helpers, skip behavior, and configured Postgres E2E coverage. tests/helpers/postgres.js (CREATE) tests/e2e/postgres-state-store.test.js (CREATE) | T001 Test strategy, T012 Unit tests, T014 Test execution |
+| FR-010 | User provides Postgres manually; setup/start never auto-launch Docker. | Updates setup/start messages and docs. README.md (MODIFY) src/cli/setup.js (MODIFY) src/cli/start.js (MODIFY) | T011 Runtime wiring, T013 Cleanup |
+
+## Assumptions and Inferences
+
+- The accepted architecture intentionally supersedes the original GH-3 auto-launch Docker acceptance item.
+- Job history export includes pg-boss-accessible history and documents provider limits if pg-boss does not expose one-for-one equivalents of the custom queue rows.
