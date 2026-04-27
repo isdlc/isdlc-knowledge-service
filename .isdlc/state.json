@@ -103,7 +103,40 @@
     "enabled": true
   },
   "skill_usage_log": [],
-  "active_workflow": null,
+  "active_workflow": {
+    "type": "build",
+    "description": "Typed metadata vocabulary for chunks from iSDLC artifacts (REQ-GH-7)",
+    "started_at": "2026-04-28T00:00:00Z",
+    "status": "in_progress",
+    "phases": ["05-test-strategy", "06-implementation", "16-quality-loop", "08-code-review"],
+    "phase_status": {
+      "05-test-strategy": "completed",
+      "06-implementation": "pending",
+      "16-quality-loop": "pending",
+      "08-code-review": "pending"
+    },
+    "current_phase": "06-implementation",
+    "current_phase_index": 1,
+    "gate_mode": "strict",
+    "artifact_prefix": "REQ",
+    "artifact_folder": "REQ-GH-7-typed-metadata-vocabulary-for-chunks-from-isdlc",
+    "external_id": "GH-7",
+    "source": "github",
+    "source_id": "GH-7",
+    "branch": "feature/REQ-GH-7-typed-metadata-vocabulary-for-chunks-from-isdlc",
+    "sizing": {
+      "intensity": "light",
+      "effective_intensity": "light",
+      "recommended_by": "framework",
+      "overridden": false,
+      "light_skip_phases": ["03-architecture", "04-design"]
+    },
+    "flags": {},
+    "git_branch": {
+      "name": "feature/REQ-GH-7-typed-metadata-vocabulary-for-chunks-from-isdlc"
+    },
+    "budget_status": "on_track"
+  },
   "workflow_history": [
     {
       "type": "build",
@@ -248,7 +281,22 @@
     "next_bug_id": 1
   },
   "current_phase": null,
-  "phases": {},
+  "phases": {
+    "05-test-strategy": {
+      "status": "completed",
+      "started": "2026-04-28T00:00:00Z",
+      "completed": "2026-04-28T00:01:00Z",
+      "summary": "Test strategy for light-tier deployment vocabulary layer: 12 new unit tests across deployment validator, merge function, project-store overlap, CLI startup. Existing 692 tests must regress-test green.",
+      "timing": {
+        "started_at": "2026-04-28T00:00:00Z",
+        "completed_at": "2026-04-28T00:01:00Z",
+        "wall_clock_minutes": 1,
+        "retries": 0,
+        "debate_rounds_used": 0,
+        "fan_out_chunks": 0
+      }
+    }
+  },
   "blockers": [],
   "active_agent": null,
   "history": [
@@ -283,7 +331,7 @@
       "action": "Renamed REQ-0001 → REQ-GH-7 (correct framework convention for GitHub-sourced items). Scope unchanged: deployment-wide vocabulary layer. counters.next_req_id reverted 2 → 1."
     }
   ],
-  "state_version": 38,
+  "state_version": 39,
   "pending_escalations": [],
   "pending_delegation": null,
   "contract_violations": []
