@@ -31,12 +31,16 @@
 - **Rationale**: Maximises adoption across teams with different infrastructure.
 - **Consequences**: Must abstract a vector DB interface. Per-project selection requires multiple adapter implementations.
 
-### ADR-003 — JSON File Config Store
-- **Status**: Accepted
-- **Context**: Need to store project definitions, source lists, model config, refresh history.
-- **Decision**: JSON files at `data/projects/{project-id}/config.json` and `data/projects/{project-id}/refresh-history.json`.
-- **Rationale**: Human-readable, easy to backup, no database dependency for config.
-- **Consequences**: No concurrent-write protection (acceptable — single admin). Refresh history may need rotation.
+### ADR-003 — Postgres Runtime State Substrate (REQ-GH-3)
+- **Status**: Accepted (REQ-GH-3) — supersedes the original "JSON File Config Store" decision.
+- **Context**: Project definitions, source lists, model config, refresh history, audit entries, queue state, and import/export run history all need a transactional, queryable home that scales beyond single-admin JSON files.
+- **Decision**: PostgreSQL `>= 14` is the only runtime state substrate. The schema `ks` contains five tables: `projects`, `refresh_history`, `audit_entries`, `import_export_runs`, `schema_migrations`. Three roles (`ks_owner`, `ks_app`, `ks_maintenance`) enforce append-only audit at the DB layer. JSON files become an import/export format (`isdlc-knowledge config export|import`), not runtime state. The custom SQLite queue is replaced by `pg-boss` for jobs.
+- **Rationale**: Transactional consistency across project + refresh + audit changes. SQL queryability for audit search and operational dashboards. Off-the-shelf retry / dead-letter via pg-boss instead of custom code. One state substrate everywhere — no SQLite/JSON/Postgres tri-stack.
+- **Consequences**:
+  - Operators must provide PostgreSQL (no Docker auto-launch). Setup prints manual instructions; start fails fast with `ERR-DB-001` / `ERR-DB-002` if the DB is unreachable.
+  - Node runtime baseline moves from `>=18` to `>=22.12.0` (pg-boss requirement).
+  - `data/config.json` is deprecated as a runtime config source; the central service config now lives at `.ks/config.json` (FR-002). Secrets remain env-var references.
+  - Vector storage is unchanged. `sqlite-vec` and `better-sqlite3` remain as vector dependencies (FR-008).
 
 ### ADR-004 — Dual Model Inference Path
 - **Status**: Accepted
@@ -56,7 +60,7 @@
 | Vector DB | Pluggable | Per-project. Local: SQLite-vec, Qdrant, ChromaDB, Milvus, Weaviate, FAISS. Remote: OpenSearch, Pinecone, Qdrant Cloud, Weaviate Cloud, Milvus Cloud. | Single DB (limits adoption) |
 | Job Queue | BetterSqlite3 | No external deps. Durable. Proven. | Redis/Bull (overkill), pg-boss (Postgres dep) |
 | Web UI | Plain HTML + vanilla JS | CON-004. No build step. | React/Vue (unnecessary complexity) |
-| Config Store | JSON files | Simple, human-readable, git-friendly. | SQLite (harder to inspect) |
+| Config Store | PostgreSQL (REQ-GH-3) | Transactional consistency across project/refresh/audit; SQL queryability; pg-boss queue substrate. | JSON files (no concurrency control); SQLite (no external service dep but couples vector + state in one substrate) |
 | Source crawling | Node.js native | `simple-git`, `svn` CLI wrapper, Confluence REST, `cheerio` for web | Scrapy (Python, wrong ecosystem) |
 | Observability | Prometheus + OpenTelemetry | Industry standard. Grafana / Zabbix compatible. | Custom metrics (reinventing the wheel) |
 
@@ -78,7 +82,7 @@ The system decomposes into 14 modules. Each has a single responsibility and a pu
 | 8 | Model Manager | `src/models/manager.js` | Lifecycle: load, pin, LRU evict, memory tracking (local only) | `getAdapter(config)`, `pin(name)`, `unpin(name)`, `getStatus()` |
 | 9 | Vector DB Adapters | `src/vectordb/` | Unified vector storage interface — local or remote | `store`, `search`, `delete`, `deleteAll`, `stats` |
 | 10 | Job Queue | `src/queue/` | Durable async queue (SQLite, BetterSqlite3) | `enqueue`, `dequeue`, `complete`, `fail`, `getStatus`, `listJobs` |
-| 11 | Config Store | `src/config/` | Project config CRUD + refresh history (JSON files) | `listProjects`, `getProject`, `createProject`, `updateProject`, `deleteProject`, `addRefreshRecord`, `getRefreshHistory` |
+| 11 | Config Store | `src/config/`, `src/state/` | Project config CRUD + refresh history (PostgreSQL via `src/state/postgres-state-store.js` — REQ-GH-3 FR-004) | `listProjects`, `getProject`, `createProject`, `updateProject`, `deleteProject`, `addRefreshRecord`, `getRefreshHistory` |
 | 12 | CLI | `src/cli/` | npm bin entry point: setup wizard, start, stop, status, logs, reset | `setup`, `start`, `stop`, `status`, `logs`, `reset` |
 | 13 | Audit Logger | `src/audit/` | Append-only admin action log (JSONL with size rotation) | `log(action, details)`, `query(filters)` |
 | 14 | Observability | `src/observability/` | Prometheus metrics, OTLP traces, staleness detection | `metrics.js`, `tracing.js`, `staleness.js` |
@@ -177,8 +181,8 @@ No circular dependencies. All modules have a single responsibility.
 | Process architecture | Two-process (API + Worker) | Low |
 | Vector DB | Pluggable, no default | Low |
 | Model inference | Dual path (local ONNX + cloud API) | Low |
-| Config store | JSON files | Low |
-| Job queue | SQLite-backed | Low |
+| Config store | PostgreSQL (`ks` schema, REQ-GH-3) | Medium — external service dependency |
+| Job queue | pg-boss (PostgreSQL, REQ-GH-3) | Low — pg-boss handles retries/dead-letter |
 | Web UI | Plain HTML, same process | Low |
 | Observability | Prometheus + OTLP, domain-specific in web UI | Low |
 

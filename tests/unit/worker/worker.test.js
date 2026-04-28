@@ -219,6 +219,38 @@ test('worker.stop() returns immediately when idle', async () => {
   assert.equal(queue.calls.fail.length, 0);
 });
 
+test('REQ-GH-3 AC-006-03 — worker.stop() calls queue.close() if exposed (graceful shutdown)', async () => {
+  const closeCalls = { count: 0 };
+  const queueWithClose = {
+    ...makeQueue([]),
+    async close() { closeCalls.count++; },
+  };
+  const w = startWorker({
+    queue: queueWithClose,
+    ...makeNoopDeps(),
+    options: { wait: fastWait },
+  });
+  await new Promise((r) => setTimeout(r, 5));
+  await w.stop();
+  assert.equal(closeCalls.count, 1, 'queue.close() should be called once during shutdown');
+});
+
+test('worker.stop() tolerates queue.close() throwing without breaking shutdown', async () => {
+  const queueWithBrokenClose = {
+    ...makeQueue([]),
+    async close() { throw new Error('boss already stopped'); },
+  };
+  const w = startWorker({
+    queue: queueWithBrokenClose,
+    ...makeNoopDeps(),
+    options: { wait: fastWait },
+  });
+  await new Promise((r) => setTimeout(r, 5));
+  // Must NOT throw — the worker logs and moves on.
+  await w.stop();
+  assert.equal(w.running(), false);
+});
+
 /* ------------------------------------------------------------------ */
 /* Idle polling                                                        */
 /* ------------------------------------------------------------------ */
