@@ -4,7 +4,7 @@ Marker legend: `[ ]` raw — `[~]` partial — `[A]` analyzed — `[x]` shipped.
 
 ## Open
 
-_(none — all open items shipped)_
+- [ ] REQ-GH-17 — API authentication for REST, MCP, and web UI
 
 ## Shipped
 
