@@ -10,6 +10,20 @@ import assert from 'node:assert/strict';
 import { PassThrough } from 'node:stream';
 
 import { runStart } from '../../../src/cli/start.js';
+import { defaultServiceConfig } from '../../../src/config/service-config.js';
+
+// REQ-GH-3 added two new gates (service config + DB URL resolution) to
+// runStart. Provide a default service-config seam and ensure the env var
+// resolved by start.js is set, so tests that focus on REQ-GH-7 vocabulary
+// validation can still reach (or short-circuit before) that gate cleanly.
+const stubServiceConfig = async () => defaultServiceConfig();
+const ORIGINAL_DB_URL = process.env.KNOWLEDGE_DATABASE_URL;
+process.env.KNOWLEDGE_DATABASE_URL =
+  process.env.KNOWLEDGE_DATABASE_URL || 'postgres://test:test@localhost:5432/test';
+process.on('exit', () => {
+  if (ORIGINAL_DB_URL === undefined) delete process.env.KNOWLEDGE_DATABASE_URL;
+  else process.env.KNOWLEDGE_DATABASE_URL = ORIGINAL_DB_URL;
+});
 
 /** Build a fake fork() that records calls and returns a noop child handle. */
 function makeSpawnSpy() {
@@ -60,6 +74,7 @@ test('runStart rejects invalid deployment metadata_vocabulary BEFORE spawning ch
         _fetch: okHealthFetch,
         _writePid: async () => {},
         _waitMs: async () => {},
+        _loadServiceConfig: stubServiceConfig,
       }),
     (err) => /metadata_vocabulary.*invalid/i.test(err.message),
   );
@@ -116,6 +131,8 @@ test('runStart proceeds normally when metadata_vocabulary block is absent (AC-00
     _fetch: okHealthFetch,
     _writePid: async () => {},
     _waitMs: async () => {},
+    _loadServiceConfig: stubServiceConfig,
+    serviceConfigCwd: '/tmp/kn-test-ok',
   });
 
   assert.equal(spawn.calls.length, 2, 'API + Worker children spawned');
@@ -142,6 +159,8 @@ test('runStart proceeds normally when metadata_vocabulary is valid', async () =>
     _fetch: okHealthFetch,
     _writePid: async () => {},
     _waitMs: async () => {},
+    _loadServiceConfig: stubServiceConfig,
+    serviceConfigCwd: '/tmp/kn-test-valid',
   });
 
   assert.equal(spawn.calls.length, 2);

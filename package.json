@@ -4,7 +4,7 @@
   "description": "Centralised knowledge management service — relationship-aware embedding, multi-project indexes, pluggable Vector DB and model backends, web UI admin, MCP interface",
   "type": "module",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.12.0"
   },
   "bin": {
     "isdlc-knowledge": "./bin/cli.js"
@@ -60,6 +60,8 @@
     "googleapis": "^144.0.0",
     "onnxruntime-node": "^1.20.0",
     "openai": "^4.73.0",
+    "pg": "^8.20.0",
+    "pg-boss": "^10.4.2",
     "pino": "^9.5.0",
     "prom-client": "^15.1.3",
     "simple-git": "^3.27.0",

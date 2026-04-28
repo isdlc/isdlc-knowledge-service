@@ -10,3 +10,9 @@ data/audit.*.jsonl
 .DS_Store
 coverage/
 dist/
+
+# REQ-GH-3: per-deployment service config — not committed (similar to .env)
+.ks/
+
+# Framework tooling artifacts (not part of project source)
+.isdlc/state-archive.json

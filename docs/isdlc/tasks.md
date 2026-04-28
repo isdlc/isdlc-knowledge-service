@@ -4,17 +4,17 @@
 
 | Phase | Total | Done | Remaining |
 |---|---:|---:|---:|
-| 05 | 1 | 0 | 1 |
-| 06 | 12 | 0 | 12 |
+| 05 | 1 | 1 | 0 |
+| 06 | 12 | 2 | 10 |
 | 16 | 2 | 0 | 2 |
 | 08 | 2 | 0 | 2 |
-| **Total** | **17** | **0** | **17** |
+| **Total** | **17** | **3** | **14** |
 
-## Phase 05: Test Strategy -- PENDING
+## Phase 05: Test Strategy -- COMPLETE
 
 ### test_case_design
 
-- [ ] T001 Test strategy: DB acceptance suite | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010
+- [X] T001 Test strategy: DB acceptance suite | traces: FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010
   files: docs/requirements/REQ-GH-3-state-store-postgres-only-json-import-export-pgboss/test-strategy.md (MODIFY), tests/helpers/postgres.js (CREATE), tests/e2e/postgres-state-store.test.js (CREATE)
   tests: tests/e2e/postgres-state-store.test.js (CREATE)
   blocked_by: []
@@ -23,11 +23,11 @@
     Define the DB test harness and E2E skip behavior before implementation starts.
     The helper must detect missing DB config and skip DB E2E with an explicit reason.
 
-## Phase 06: Implementation -- PENDING
+## Phase 06: Implementation -- IN PROGRESS
 
 ### setup
 
-- [ ] T002 Runtime baseline: Node 22.12 and pg-boss dependencies | traces: FR-001, AC-001-01, AC-001-02, AC-001-03
+- [X] T002 Runtime baseline: Node 22.12 and pg-boss dependencies | traces: FR-001, AC-001-01, AC-001-02, AC-001-03
   files: package.json (MODIFY), package-lock.json (MODIFY), README.md (MODIFY)
   tests: tests/unit/smoke.test.js (MODIFY)
   blocked_by: [T001]
@@ -36,7 +36,7 @@
     Bump the package engine to node >=22.12.0. Add pg and pg-boss dependencies.
     Remove better-sqlite3 only after T013 confirms no non-queue runtime usage remains.
 
-- [ ] T003 Service config: .ks/config.json loader and setup/start wiring | traces: FR-002, FR-010, AC-002-01, AC-002-02, AC-002-03, AC-010-01, AC-010-02
+- [X] T003 Service config: .ks/config.json loader and setup/start wiring | traces: FR-002, FR-010, AC-002-01, AC-002-02, AC-002-03, AC-010-01, AC-010-02
   files: src/config/service-config.js (CREATE), src/cli/setup.js (MODIFY), src/cli/start.js (MODIFY), tests/unit/config/service-config.test.js (CREATE), tests/unit/cli/setup.test.js (MODIFY), tests/unit/cli/start.test.js (MODIFY)
   tests: tests/unit/config/service-config.test.js (CREATE), tests/unit/cli/setup.test.js (MODIFY), tests/unit/cli/start.test.js (MODIFY)
   blocked_by: [T001]

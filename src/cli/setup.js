@@ -23,6 +23,11 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
+import {
+  defaultServiceConfig,
+  writeServiceConfig,
+} from '../config/service-config.js';
+
 const MODEL_SOURCES = [
   { key: 'local', label: 'Local ONNX (offline, runs in-process)' },
   { key: 'cloud', label: 'Cloud API (OpenAI / Cohere / Bedrock)' },
@@ -156,6 +161,40 @@ export async function runSetup(opts = {}) {
     await writeFile(configPath, JSON.stringify(config, null, 2));
 
     write(`\nWrote ${configPath}`);
+
+    // ---- 4b. REQ-GH-3 service config (.ks/config.json) -------------------
+    // FR-002 / AC-002-01: setup writes the central service-config file. It
+    // points at the Postgres database via env-var reference; secrets never
+    // live in this file (CON-005 / NFR-003).
+    // `.ks/config.json` lives at the project root in production (cwd).
+    // Tests pass `serviceConfigCwd: <tmpdir>` for isolation, OR a
+    // `_writeServiceConfig` seam that bypasses the disk write entirely.
+    const writeServiceConfigFn = opts._writeServiceConfig || writeServiceConfig;
+    const cwdForServiceConfig = opts.serviceConfigCwd || opts.cwd || process.cwd();
+    const dbUrlEnvName = (await ask(
+      'Env variable that holds your Postgres URL [KNOWLEDGE_DATABASE_URL]: ',
+    )) || 'KNOWLEDGE_DATABASE_URL';
+    const serviceConfig = defaultServiceConfig({ urlEnv: dbUrlEnvName });
+    const serviceConfigFilePath = await writeServiceConfigFn({
+      cwd: cwdForServiceConfig,
+      config: serviceConfig,
+    });
+    write(`Wrote ${serviceConfigFilePath}`);
+
+    // ---- 4c. REQ-GH-3 FR-010 / AC-010-01..03 — Postgres setup guidance ---
+    write('\n--- Postgres setup ---');
+    write('REQ-GH-3 / FR-003: PostgreSQL is the runtime state substrate. The');
+    write('service does NOT auto-launch Docker; you provide the database.');
+    write('');
+    write('Quick start (local, macOS):');
+    write('  brew install postgresql@16');
+    write('  brew services start postgresql@16');
+    write('  createdb isdlc_knowledge');
+    write(`  export ${dbUrlEnvName}=postgres://localhost:5432/isdlc_knowledge`);
+    write('');
+    write('Or use any externally managed Postgres 14+ and export');
+    write(`  ${dbUrlEnvName}=postgres://user:password@host:5432/database`);
+    write('before running `isdlc-knowledge start`.');
 
     // ---- 5. FR-012 standalone refresh integration guidance ---------------
     const serverUrl = `http://${host}:${apiPort}`;
