@@ -53,15 +53,17 @@
         "path": "docs/requirements/REQ-GH-3-state-store-postgres-only-json-import-export-pgboss/",
         "source": "github",
         "source_id": "GH-3",
-        "status": "analysed",
-        "phase_completed": "04-design",
-        "scope_note": "Full GH-3 scope accepted with two amendments: no Docker auto-launch (manual Postgres), and DB E2E skips when unconfigured.",
+        "status": "shipped",
+        "phase_completed": "08-code-review",
+        "scope_note": "Postgres runtime substrate + pg-boss queue + import/export. Code review CONDITIONAL PASS — integration tests against a live DB must run before production cutover.",
         "fr_count": 10,
         "task_count": 17,
         "adr_count": 0,
         "tier": "epic",
         "tier_effective": "standard",
-        "linked_at": "2026-04-28T01:00:00Z"
+        "linked_at": "2026-04-28T01:00:00Z",
+        "merged_at": "2026-04-28T02:30:00Z",
+        "merge_commit": "fba5a3d"
       }
     ]
   },
@@ -121,50 +123,55 @@
     "enabled": true
   },
   "skill_usage_log": [],
-  "active_workflow": {
-    "type": "build",
-    "description": "State store: Postgres-only with JSON import/export and pg-boss queue (REQ-GH-3)",
-    "started_at": "2026-04-28T01:00:00Z",
-    "status": "in_progress",
-    "phases": [
-      "05-test-strategy",
-      "06-implementation",
-      "16-quality-loop",
-      "08-code-review"
-    ],
-    "phase_status": {
-      "05-test-strategy": "completed",
-      "06-implementation": "completed",
-      "16-quality-loop": "completed",
-      "08-code-review": "completed"
-    },
-    "current_phase": "08-code-review",
-    "current_phase_index": 3,
-    "gate_mode": "strict",
-    "artifact_prefix": "REQ",
-    "artifact_folder": "REQ-GH-3-state-store-postgres-only-json-import-export-pgboss",
-    "external_id": "GH-3",
-    "source": "github",
-    "source_id": "GH-3",
-    "branch": "feature/REQ-GH-3-state-store-postgres-only-json-import-export-pgboss",
-    "sizing": {
-      "intensity": "epic",
-      "effective_intensity": "standard",
-      "recommended_by": "framework",
-      "overridden": false,
-      "epic_deferred": true,
-      "light_skip_phases": []
-    },
-    "flags": {},
-    "git_branch": {
-      "name": "feature/REQ-GH-3-state-store-postgres-only-json-import-export-pgboss"
-    },
-    "budget_status": "on_track",
-    "checkpoints": {
-      "tier_a_foundation": "T001-T003 (Phase 05 harness + package.json + service-config). Pause for user review before T004+."
-    }
-  },
+  "active_workflow": null,
   "workflow_history": [
+    {
+      "type": "build",
+      "description": "State store: Postgres-only with JSON import/export and pg-boss queue (REQ-GH-3)",
+      "started_at": "2026-04-28T01:00:00Z",
+      "completed_at": "2026-04-28T02:30:00Z",
+      "status": "completed",
+      "phases": ["05-test-strategy", "06-implementation", "16-quality-loop", "08-code-review"],
+      "phase_status": {
+        "05-test-strategy": "completed",
+        "06-implementation": "completed",
+        "16-quality-loop": "completed",
+        "08-code-review": "completed"
+      },
+      "gate_mode": "strict",
+      "artifact_prefix": "REQ",
+      "artifact_folder": "REQ-GH-3-state-store-postgres-only-json-import-export-pgboss",
+      "external_id": "GH-3",
+      "source": "github",
+      "source_id": "GH-3",
+      "branch": "feature/REQ-GH-3-state-store-postgres-only-json-import-export-pgboss",
+      "merged_into": "main",
+      "merge_commit": "fba5a3d",
+      "sizing": {
+        "intensity": "epic",
+        "effective_intensity": "standard",
+        "recommended_by": "framework",
+        "overridden": false,
+        "epic_deferred": true,
+        "light_skip_phases": []
+      },
+      "flags": {},
+      "git_branch": {
+        "name": "feature/REQ-GH-3-state-store-postgres-only-json-import-export-pgboss"
+      },
+      "metrics": {
+        "total_phases": 4,
+        "phases_completed": 4,
+        "tests_added": 70,
+        "tests_total_passing": 809,
+        "tests_failed": 0,
+        "phase_16_iterations": 1,
+        "gates_passed_first_try": 4,
+        "gates_required_iteration": 0,
+        "tier_checkpoints_used": 1
+      },
+      "verdict": "CONDITIONAL PASS — integration tests against live Postgres required before production cutover"
+    },
     {
       "type": "build",
       "description": "Typed metadata vocabulary for chunks from iSDLC artifacts (REQ-GH-7)",
@@ -464,6 +471,11 @@
       "timestamp": "2026-04-28T00:30:00Z",
       "agent": "sdlc-orchestrator",
       "action": "REQ-GH-7 build workflow completed: 715/715 tests pass (23 new), Phase 08 PASS first try, merged feature/REQ-GH-7 → main (merge commit d771adf). Workflow archived to history."
+    },
+    {
+      "timestamp": "2026-04-28T02:30:00Z",
+      "agent": "sdlc-orchestrator",
+      "action": "REQ-GH-3 build workflow completed: 809/809 tests pass (70 new), Phase 08 CONDITIONAL PASS, merged feature/REQ-GH-3 → main (merge commit fba5a3d). Tier A checkpoint between T003/T004. Workflow archived. Note: integration tests against live Postgres deferred until DB is provisioned (per FR-009 skip contract)."
     },
     {
       "timestamp": "2026-04-28T01:00:00Z",
