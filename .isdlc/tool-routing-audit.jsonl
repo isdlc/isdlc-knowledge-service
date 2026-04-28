@@ -523,3 +523,4 @@
 {"ts":"2026-04-28T20:24:32.448Z","tool":"Read","preferred":"mcp__code-index-mcp__get_file_summary","enforcement":"warn","decision":"warn","exemption":null,"rule_id":"inferred-file-summary","rule_source":"inferred"}
 {"ts":"2026-04-28T20:24:37.660Z","tool":"Read","preferred":"mcp__code-index-mcp__get_file_summary","enforcement":"warn","decision":"exempt","exemption":"edit_prep","rule_id":"inferred-file-summary","rule_source":"inferred"}
 {"ts":"2026-04-28T20:24:50.091Z","tool":"Read","preferred":"mcp__code-index-mcp__get_file_summary","enforcement":"warn","decision":"exempt","exemption":"edit_prep","rule_id":"inferred-file-summary","rule_source":"inferred"}
+{"ts":"2026-04-28T20:39:45.018Z","tool":"Read","preferred":"mcp__code-index-mcp__get_file_summary","enforcement":"warn","decision":"warn","exemption":null,"rule_id":"inferred-file-summary","rule_source":"inferred"}
