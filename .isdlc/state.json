@@ -121,7 +121,49 @@
     "enabled": true
   },
   "skill_usage_log": [],
-  "active_workflow": null,
+  "active_workflow": {
+    "type": "build",
+    "description": "State store: Postgres-only with JSON import/export and pg-boss queue (REQ-GH-3)",
+    "started_at": "2026-04-28T01:00:00Z",
+    "status": "in_progress",
+    "phases": [
+      "05-test-strategy",
+      "06-implementation",
+      "16-quality-loop",
+      "08-code-review"
+    ],
+    "phase_status": {
+      "05-test-strategy": "completed",
+      "06-implementation": "completed",
+      "16-quality-loop": "completed",
+      "08-code-review": "completed"
+    },
+    "current_phase": "08-code-review",
+    "current_phase_index": 3,
+    "gate_mode": "strict",
+    "artifact_prefix": "REQ",
+    "artifact_folder": "REQ-GH-3-state-store-postgres-only-json-import-export-pgboss",
+    "external_id": "GH-3",
+    "source": "github",
+    "source_id": "GH-3",
+    "branch": "feature/REQ-GH-3-state-store-postgres-only-json-import-export-pgboss",
+    "sizing": {
+      "intensity": "epic",
+      "effective_intensity": "standard",
+      "recommended_by": "framework",
+      "overridden": false,
+      "epic_deferred": true,
+      "light_skip_phases": []
+    },
+    "flags": {},
+    "git_branch": {
+      "name": "feature/REQ-GH-3-state-store-postgres-only-json-import-export-pgboss"
+    },
+    "budget_status": "on_track",
+    "checkpoints": {
+      "tier_a_foundation": "T001-T003 (Phase 05 harness + package.json + service-config). Pause for user review before T004+."
+    }
+  },
   "workflow_history": [
     {
       "type": "build",
@@ -155,7 +197,10 @@
         "effective_intensity": "light",
         "recommended_by": "framework",
         "overridden": false,
-        "light_skip_phases": ["03-architecture", "04-design"]
+        "light_skip_phases": [
+          "03-architecture",
+          "04-design"
+        ]
       },
       "flags": {},
       "git_branch": {
@@ -336,7 +381,7 @@
         "test_iteration": {
           "required": true,
           "completed": false,
-          "current_iteration": 1,
+          "current_iteration": 4,
           "max_iterations": 10,
           "failures_count": 0,
           "identical_failure_count": 0,
@@ -348,12 +393,36 @@
               "result": "INCONCLUSIVE",
               "failures": 0,
               "error": "Unable to determine test result"
+            },
+            {
+              "iteration": 2,
+              "timestamp": "2026-04-28T07:03:10.280Z",
+              "command": "npm run test:unit 2>&1 | tail -8",
+              "result": "INCONCLUSIVE",
+              "failures": 0,
+              "error": "Unable to determine test result"
+            },
+            {
+              "iteration": 3,
+              "timestamp": "2026-04-28T20:16:45.019Z",
+              "command": "npm run test:unit 2>&1 | tail -8",
+              "result": "INCONCLUSIVE",
+              "failures": 0,
+              "error": "Unable to determine test result"
+            },
+            {
+              "iteration": 4,
+              "timestamp": "2026-04-28T20:21:47.618Z",
+              "command": "npm run test:unit 2>&1 | tail -8",
+              "result": "INCONCLUSIVE",
+              "failures": 0,
+              "error": "Unable to determine test result"
             }
           ],
           "started_at": "2026-04-27T23:08:58.992Z",
           "last_test_result": "inconclusive",
-          "last_test_command": "npm run test:unit 2>&1 | tail -10",
-          "last_test_at": "2026-04-27T23:08:58.992Z"
+          "last_test_command": "npm run test:unit 2>&1 | tail -8",
+          "last_test_at": "2026-04-28T20:21:47.618Z"
         }
       }
     }
@@ -402,7 +471,7 @@
       "action": "REQ-GH-3 registered with epic-tier analysis (deferred to standard per CON-003). Phases 01-04 complete; tasks.md has 17 tasks. Ready for /isdlc build. Backlog and BACKLOG.md updated with analysis-baseline registration."
     }
   ],
-  "state_version": 42,
+  "state_version": 46,
   "pending_escalations": [],
   "pending_delegation": null,
   "contract_violations": []

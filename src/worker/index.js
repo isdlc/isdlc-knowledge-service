@@ -187,6 +187,16 @@ export function startWorker(deps) {
     // The loop checks `stopping` AFTER each await wait()/dequeue() — wait for
     // it to acknowledge the stop signal.
     await stoppedPromise;
+    // REQ-GH-3 / FR-006 / AC-006-03 — release pg-boss + DB resources
+    // gracefully. The legacy SQLite queue's close() is also covered.
+    if (deps.queue && typeof deps.queue.close === 'function') {
+      try {
+        await Promise.resolve(deps.queue.close());
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[worker] queue.close() failed during shutdown:', err?.message ?? err);
+      }
+    }
   }
 
   return {

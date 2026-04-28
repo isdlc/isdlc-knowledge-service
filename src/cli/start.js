@@ -26,6 +26,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { validateDeploymentVocabulary } from '../pipeline/metadata-vocabulary.js';
+import {
+  loadServiceConfig,
+  resolveDatabaseUrl,
+  ServiceConfigError,
+  serviceConfigPath,
+} from '../config/service-config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const HEALTH_TIMEOUT_MS = 30_000;
@@ -55,6 +61,41 @@ export async function runStart(opts = {}) {
     throw new Error(
       `Deployment metadata_vocabulary in ${configPath} is invalid. Fix the errors above and re-run.`,
     );
+  }
+
+  // REQ-GH-3 FR-002 / FR-010 — load `.ks/config.json` and verify the
+  // configured Postgres env var is set BEFORE forking children. Any missing
+  // piece surfaces as a clear ERR-CONFIG-001 / ERR-DB-001 message that
+  // names the file and the env var the operator must set.
+  const serviceConfigCwd = opts.serviceConfigCwd || process.cwd();
+  const loadServiceConfigFn = opts._loadServiceConfig || loadServiceConfig;
+  const ksConfigPath = serviceConfigPath(serviceConfigCwd);
+  let serviceConfig;
+  try {
+    serviceConfig = await loadServiceConfigFn({ cwd: serviceConfigCwd });
+  } catch (err) {
+    if (err instanceof ServiceConfigError) {
+      write(`Service config error (${err.code}): ${err.message}`);
+      throw new Error(
+        `Cannot start: service config at ${ksConfigPath} is missing or invalid. ` +
+          'Run `isdlc-knowledge setup` to create it.',
+      );
+    }
+    throw err;
+  }
+
+  // Resolve the DB URL so a clear ERR-DB-001 fires NOW (before any spawn)
+  // when the operator hasn't exported the env var yet.
+  try {
+    resolveDatabaseUrl(serviceConfig);
+  } catch (err) {
+    if (err instanceof ServiceConfigError) {
+      write(`Database config error (${err.code}): ${err.message}`);
+      throw new Error(
+        `Cannot start: ${err.message} See README.md "Postgres setup" for guidance.`,
+      );
+    }
+    throw err;
   }
 
   const spawn = opts._spawn || ((mod, args, o) => nodeFork(mod, args, o));

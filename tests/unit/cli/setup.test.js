@@ -53,7 +53,7 @@ describe('runSetup wizard (UT-CLI-001 / AC-010-02)', () => {
       '127.0.0.1',   // host
     ]);
 
-    const config = await runSetup({ stdin, stdout, dataDir });
+    const config = await runSetup({ stdin, stdout, dataDir, serviceConfigCwd: dataDir });
 
     assert.equal(config.model.source, 'local');
     assert.equal(config.model.backend, 'onnx');
@@ -76,12 +76,57 @@ describe('runSetup wizard (UT-CLI-001 / AC-010-02)', () => {
       '',            // host default
     ]);
 
-    const config = await runSetup({ stdin, stdout, dataDir });
+    const config = await runSetup({ stdin, stdout, dataDir, serviceConfigCwd: dataDir });
     assert.equal(config.model.source, 'cloud');
     assert.equal(config.model.backend, 'openai');
     // Constitution V.5 / VII.5: api_key MUST be a {env} reference, not a bare string.
     assert.deepEqual(config.model.api_key, { env: 'OPENAI_API_KEY' });
     assert.match(getOutput(), /Will read API key from \$OPENAI_API_KEY/);
+  });
+
+  test('REQ-GH-3 AC-002-01 — setup writes .ks/config.json with default Postgres/queue/state shape', async () => {
+    const { stdin, stdout, getOutput } = makeStdio([
+      '1', '', '', 'n', // local model + defaults + no download
+      '1',              // sqlite-vec
+      '', '', '',       // ports + host defaults
+      '',               // env var name default → KNOWLEDGE_DATABASE_URL
+    ]);
+
+    await runSetup({ stdin, stdout, dataDir, serviceConfigCwd: dataDir });
+
+    const ksOnDisk = JSON.parse(
+      await readFile(join(dataDir, '.ks', 'config.json'), 'utf8'),
+    );
+    assert.equal(ksOnDisk.version, 1);
+    assert.equal(ksOnDisk.database.urlEnv, 'KNOWLEDGE_DATABASE_URL');
+    assert.equal(ksOnDisk.database.schema, 'ks');
+    assert.equal(ksOnDisk.database.ssl, false);
+    assert.equal(ksOnDisk.queue.provider, 'pg-boss');
+    assert.equal(ksOnDisk.queue.schema, 'pgboss');
+    assert.equal(ksOnDisk.state.provider, 'postgres');
+    assert.equal(ksOnDisk.tests.skipDbE2EWhenUnconfigured, true);
+
+    // AC-010-01 — Postgres setup guidance is printed.
+    const out = getOutput();
+    assert.match(out, /Postgres setup/);
+    assert.match(out, /KNOWLEDGE_DATABASE_URL/);
+    assert.match(out, /service does NOT auto-launch Docker/);
+  });
+
+  test('REQ-GH-3 AC-002-01 — setup honors a custom DB env var name', async () => {
+    const { stdin, stdout } = makeStdio([
+      '1', '', '', 'n',
+      '1',
+      '', '', '',
+      'KS_PG_URL', // custom env var name
+    ]);
+
+    await runSetup({ stdin, stdout, dataDir, serviceConfigCwd: dataDir });
+
+    const ksOnDisk = JSON.parse(
+      await readFile(join(dataDir, '.ks', 'config.json'), 'utf8'),
+    );
+    assert.equal(ksOnDisk.database.urlEnv, 'KS_PG_URL');
   });
 
   test('FR-012: setup completion prints refresh integration guidance (AC-012-02)', async () => {
@@ -91,7 +136,7 @@ describe('runSetup wizard (UT-CLI-001 / AC-010-02)', () => {
       '4242', '0', '0.0.0.0',
     ]);
 
-    await runSetup({ stdin, stdout, dataDir });
+    await runSetup({ stdin, stdout, dataDir, serviceConfigCwd: dataDir });
     const out = getOutput();
     assert.match(out, /POST to/);
     assert.match(out, /\/api\/refresh/);
@@ -108,7 +153,7 @@ describe('runSetup wizard (UT-CLI-001 / AC-010-02)', () => {
       '', '', '',
     ]);
 
-    const config = await runSetup({ stdin, stdout, dataDir, _fetch });
+    const config = await runSetup({ stdin, stdout, dataDir, serviceConfigCwd: dataDir, _fetch });
     assert.equal(fetchedUrl, 'https://example.com/m.onnx');
     assert.equal(config.model.downloaded, true);
   });
@@ -124,7 +169,7 @@ describe('runSetup wizard (UT-CLI-001 / AC-010-02)', () => {
       '', '', '',
     ]);
 
-    const config = await runSetup({ stdin, stdout, dataDir, _fetch });
+    const config = await runSetup({ stdin, stdout, dataDir, serviceConfigCwd: dataDir, _fetch });
     assert.equal(config.model.source, 'cloud');
     assert.deepEqual(config.model.api_key, { env: 'OPENAI_API_KEY' });
     assert.match(getOutput(), /ERR-SETUP-002/);
@@ -139,7 +184,7 @@ describe('runSetup wizard (UT-CLI-001 / AC-010-02)', () => {
       '', '', '',
     ]);
 
-    const config = await runSetup({ stdin, stdout, dataDir });
+    const config = await runSetup({ stdin, stdout, dataDir, serviceConfigCwd: dataDir });
     assert.equal(config.vectordb.backend, 'pinecone');
     assert.equal(config.vectordb.url, 'https://example-pinecone.io');
     // Constitution V.5 / VII.5: api_key MUST be a {env} reference, not a bare string.
@@ -155,7 +200,7 @@ describe('runSetup wizard (UT-CLI-001 / AC-010-02)', () => {
       '99999',         // mcp port out of range → default 0
       '',
     ]);
-    const config = await runSetup({ stdin, stdout, dataDir });
+    const config = await runSetup({ stdin, stdout, dataDir, serviceConfigCwd: dataDir });
     assert.equal(config.server.api_port, 3000);
     assert.equal(config.server.mcp_port, 0);
   });

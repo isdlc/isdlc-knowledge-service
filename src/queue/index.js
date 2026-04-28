@@ -19,4 +19,9 @@
 //   { id, type, payload, status, retries, max_retries: 3,
 //     created_at, started_at?, completed_at?, result?, error? }
 
+// REQ-GH-3 / FR-006 — pg-boss is the production queue. The legacy
+// SQLite-backed `createQueue` remains exported as a test/dev fixture
+// but is no longer used at runtime (T011 wires `createPgBossQueue`).
+// Final removal of the SQLite implementation is tracked in T013.
 export { createQueue } from './queue.js';
+export { createPgBossQueue } from './pgboss-queue.js';
